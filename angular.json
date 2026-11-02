@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "mi-login": {
+    "SaludYa": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -56,10 +56,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "mi-login:build:production"
+              "buildTarget": "SaludYa:build:production"
             },
             "development": {
-              "buildTarget": "mi-login:build:development"
+              "buildTarget": "SaludYa:build:development"
             }
           },
           "defaultConfiguration": "development"

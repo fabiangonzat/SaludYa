@@ -1,0 +1,51 @@
+@layer components {
+:host { margin: 0; font-family: Inter, system-ui, sans-serif; color: #0B2A5B; background: #FFFFFF; display: block; }
+a{color:#0A62D0}a:hover{color:#08408F}
+*{box-sizing:border-box}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.burger{display:none}
+.navlink{color:#0B2A5B;text-decoration:none;font-weight:500;font-size:15px;padding:8px 2px;border-bottom:2px solid transparent}
+.navlink:hover{color:#0A62D0;border-bottom-color:#087BFA}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 22px;border-radius:14px;font-weight:600;font-size:15px;text-decoration:none;cursor:pointer;border:2px solid transparent;font-family:inherit;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease}
+.btn:focus-visible,.navlink:focus-visible,.card a:focus-visible,.burger:focus-visible{outline:3px solid #6D5BFA;outline-offset:3px}
+.btn-primary{background:#0A6AE0;color:#FFFFFF;box-shadow:0 8px 20px rgba(8,123,250,.28)}
+.btn-primary:hover{background:#0857B8;color:#FFFFFF;transform:translateY(-2px);box-shadow:0 12px 26px rgba(8,123,250,.36)}
+.btn-primary:active{transform:translateY(0);box-shadow:0 4px 10px rgba(8,123,250,.3)}
+.btn-ghost{background:#FFFFFF;color:#0A62D0;border-color:#BFD9FB}
+.btn-ghost:hover{background:#EAF3FF;color:#08408F;border-color:#087BFA;transform:translateY(-2px)}
+.btn-ghost:active{transform:translateY(0)}
+.btn-white{background:#FFFFFF;color:#0A4FB0}
+.btn-white:hover{background:#EAF3FF;color:#08408F;transform:translateY(-2px);box-shadow:0 10px 24px rgba(5,30,90,.3)}
+.btn-outline-white{background:transparent;color:#FFFFFF;border-color:rgba(255,255,255,.75)}
+.btn-outline-white:hover{background:rgba(255,255,255,.14);color:#FFFFFF;transform:translateY(-2px)}
+.card{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(8,80,200,.16);border-color:#BFD9FB}
+.chip{transition:background .15s ease}
+.link-arrow{color:#0A62D0;font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+.link-arrow:hover{color:#08408F;gap:10px}
+.footlink{color:#C9DDF8;text-decoration:none;font-size:14px;display:block;padding:6px 0}
+.footlink:hover{color:#FFFFFF;text-decoration:underline}
+.step-line{position:absolute;top:34px;left:12%;right:12%;height:0;border-top:3px dashed #BFD9FB;z-index:0}
+.float-a{animation:floaty 6s ease-in-out infinite}
+.float-b{animation:floaty 7s ease-in-out infinite reverse}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.hero-in{animation:rise .8s ease both}
+@supports (animation-timeline: view()){
+.reveal{animation:rise linear both;animation-timeline:view();animation-range:entry 0% entry 35%}
+}
+@media (max-width:960px){
+.nav-links{display:none}
+.nav-actions .hide-sm{display:none}
+.burger{display:inline-flex}
+.step-line{display:none}
+}
+@media (max-width:560px){
+.nav-actions .btn-ghost{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+.float-a,.float-b,.hero-in,.reveal{animation:none}
+.card,.btn{transition:none}
+}
+}

@@ -1,0 +1,367 @@
+<header class="[position:sticky] [top:0] [z-index:50] [background:rgba(255,255,255,.94)] [border-bottom:1px_solid_#E3EEFC]">
+<nav aria-label="Principal" class="[max-width:1200px] [margin:0_auto] [padding:12px_24px] [display:flex] [align-items:center] [justify-content:space-between] [gap:16px]">
+<a href="#inicio" aria-label="SaludYA, ir al inicio" class="[display:flex] [align-items:center] [gap:10px] [text-decoration:none]">
+<span class="[width:40px] [height:40px] [border-radius:12px] [background:linear-gradient(135deg,#087BFA,#5B4BEA)] [display:flex] [align-items:center] [justify-content:center]">
+<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+</span>
+<span class="[font-size:22px] [font-weight:800] [color:#0A62D0] [letter-spacing:-.02em]">SaludYA</span>
+</a>
+<div class="nav-links">
+<a class="navlink" href="#inicio">Inicio</a>
+<a class="navlink" href="#especialidades">Especialidades</a>
+<a class="navlink" href="#medicos">Médicos</a>
+<a class="navlink" href="#como-funciona">Cómo funciona</a>
+<a class="navlink" href="#contacto">Contacto</a>
+</div>
+<div class="nav-actions">
+<a class="btn btn-ghost" routerLink="/login" data-route="iniciar-sesion">Iniciar sesión</a>
+<a class="btn btn-primary hide-sm" routerLink="/registro" data-route="registro-pacientes">Registrarme</a>
+<button class="burger btn btn-ghost [padding:0] [width:44px]" aria-label="Abrir menú" [attr.aria-expanded]="menuOpen" (click)="menuOpen = !menuOpen">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A62D0" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+</button>
+</div>
+</nav>
+@if (menuOpen) {
+<div class="[border-top:1px_solid_#E3EEFC] [background:#FFFFFF] [padding:12px_24px_20px] [display:flex] [flex-direction:column] [gap:4px]">
+<a class="navlink [padding:12px_0]" href="#inicio" (click)="menuOpen = false">Inicio</a>
+<a class="navlink [padding:12px_0]" href="#especialidades" (click)="menuOpen = false">Especialidades</a>
+<a class="navlink [padding:12px_0]" href="#medicos" (click)="menuOpen = false">Médicos</a>
+<a class="navlink [padding:12px_0]" href="#como-funciona" (click)="menuOpen = false">Cómo funciona</a>
+<a class="navlink [padding:12px_0]" href="#contacto" (click)="menuOpen = false">Contacto</a>
+<a class="btn btn-primary [margin-top:10px]" routerLink="/registro" data-route="registro-pacientes">Registrarme</a>
+</div>
+}
+</header>
+
+<main>
+
+<main>
+
+<section id="inicio" class="[background:linear-gradient(180deg,#EAF3FF_0%,#FFFFFF_100%)] [position:relative] [overflow:hidden]">
+<div class="[position:absolute] [top:-140px] [right:-120px] [width:460px] [height:460px] [border-radius:50%] [background:radial-gradient(circle,rgba(109,91,250,.18),rgba(109,91,250,0)_70%)]"></div>
+<div class="[position:absolute] [bottom:-160px] [left:-120px] [width:420px] [height:420px] [border-radius:50%] [background:radial-gradient(circle,rgba(8,123,250,.16),rgba(8,123,250,0)_70%)]"></div>
+<div class="[max-width:1200px] [margin:0_auto] [padding:72px_24px_88px] [display:flex] [flex-wrap:wrap] [align-items:center] [gap:48px] [position:relative]">
+<div class="hero-in [flex:1_1_460px] [min-width:0]">
+<span class="[display:inline-flex] [align-items:center] [gap:8px] [background:#FFFFFF] [border:1px_solid_#BFD9FB] [color:#0A62D0] [font-weight:600] [font-size:14px] [padding:8px_16px] [border-radius:999px]">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+Tu salud, nuestra prioridad
+</span>
+<h1 class="[margin:22px_0_0] [font-size:clamp(38px,5.2vw,62px)] [line-height:1.06] [font-weight:800] [letter-spacing:-.03em] [color:#0B2A5B]">Tu salud con <span class="[color:#0A62D0]">especialistas</span> cerca</h1>
+<p class="[margin:22px_0_0] [font-size:19px] [line-height:1.6] [color:#4A5B78] [max-width:540px]">Accede a consultas médicas, encuentra especialistas y reserva tus citas desde cualquier lugar, de manera rápida, segura y sencilla.</p>
+<div class="[margin-top:32px] [display:flex] [flex-wrap:wrap] [gap:14px]">
+<a class="btn btn-primary [min-height:52px] [padding:0_28px] [font-size:16px]" href="reservar.html" data-route="reserva-citas">Reservar una cita</a>
+<a class="btn btn-ghost [min-height:52px] [padding:0_28px] [font-size:16px]" href="#como-funciona">Conoce cómo funciona</a>
+</div>
+<ul class="[list-style:none] [margin:36px_0_0] [padding:0] [display:flex] [flex-wrap:wrap] [gap:12px_28px]">
+<li class="[display:flex] [align-items:center] [gap:10px] [font-weight:600] [font-size:14px] [color:#2B3F63]">
+<span class="[width:36px] [height:36px] [border-radius:10px] [background:#FFFFFF] [box-shadow:0_4px_12px_rgba(8,80,200,.12)] [display:flex] [align-items:center] [justify-content:center]"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="3"></rect><path d="M16 10l5-3v10l-5-3"></path></svg></span>Atención médica digital</li>
+<li class="[display:flex] [align-items:center] [gap:10px] [font-weight:600] [font-size:14px] [color:#2B3F63]">
+<span class="[width:36px] [height:36px] [border-radius:10px] [background:#FFFFFF] [box-shadow:0_4px_12px_rgba(8,80,200,.12)] [display:flex] [align-items:center] [justify-content:center]"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 10h18"></path></svg></span>Reserva sencilla</li>
+<li class="[display:flex] [align-items:center] [gap:10px] [font-weight:600] [font-size:14px] [color:#2B3F63]">
+<span class="[width:36px] [height:36px] [border-radius:10px] [background:#FFFFFF] [box-shadow:0_4px_12px_rgba(8,80,200,.12)] [display:flex] [align-items:center] [justify-content:center]"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"></path><path d="M9 12l2 2 4-4"></path></svg></span>Profesionales de salud</li>
+</ul>
+</div>
+
+<div class="[flex:1_1_420px] [min-width:0] [display:flex] [justify-content:center]">
+<div class="[position:relative] [width:100%] [max-width:540px] [aspect-ratio:1/0.92]">
+<svg viewBox="0 0 540 500" class="[width:100%] [height:100%] [display:block]" role="img" aria-label="Ilustración de una médica atendiendo una videollamada desde una laptop">
+<defs>
+<linearGradient id="bgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#087BFA"></stop><stop offset="1" stop-color="#5B4BEA"></stop></linearGradient>
+<linearGradient id="scrG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EAF3FF"></stop><stop offset="1" stop-color="#CFE3FD"></stop></linearGradient>
+</defs>
+<rect x="20" y="30" width="500" height="440" rx="44" fill="url(#bgG)"></rect>
+<circle cx="450" cy="90" r="46" fill="#FFFFFF" fill-opacity=".12"></circle>
+<circle cx="80" cy="420" r="62" fill="#FFFFFF" fill-opacity=".10"></circle>
+<path d="M440 60h24v24h24v24h-24v24h-24v-24h-24V84h24z" fill="#FFFFFF" fill-opacity=".18" transform="scale(.6) translate(300 60)"></path>
+<rect x="90" y="110" width="360" height="236" rx="20" fill="#0B2A5B"></rect>
+<rect x="102" y="122" width="336" height="212" rx="12" fill="url(#scrG)"></rect>
+<circle cx="270" cy="188" r="38" fill="#F2C6A0"></circle>
+<path d="M230 182c0-26 18-42 42-42 22 0 38 14 38 36-10-12-22-18-40-18-16 0-30 6-40 24z" fill="#2A2140"></path>
+<path d="M190 334c0-42 36-72 80-72s80 30 80 72z" fill="#FFFFFF"></path>
+<path d="M252 262l18 34 18-34" fill="#087BFA"></path>
+<path d="M232 276c-8 20-4 40 10 46 12 5 20-6 18-18" fill="none" stroke="#0B2A5B" stroke-width="4" stroke-linecap="round"></path>
+<circle cx="262" cy="306" r="7" fill="#5B4BEA"></circle>
+<circle cx="256" cy="190" r="3.5" fill="#0B2A5B"></circle><circle cx="286" cy="190" r="3.5" fill="#0B2A5B"></circle>
+<path d="M258 206c8 8 20 8 28 0" fill="none" stroke="#0B2A5B" stroke-width="3" stroke-linecap="round"></path>
+<rect x="352" y="132" width="76" height="54" rx="10" fill="#0B2A5B" fill-opacity=".85"></rect>
+<circle cx="390" cy="152" r="10" fill="#9CC6FB"></circle><path d="M370 182c0-12 9-20 20-20s20 8 20 20z" fill="#9CC6FB"></path>
+<rect x="190" y="304" width="0" height="0"></rect>
+<g transform="translate(222 306)"><rect width="96" height="28" rx="14" fill="#0B2A5B" fill-opacity=".9"></rect><circle cx="26" cy="14" r="9" fill="#087BFA"></circle><circle cx="48" cy="14" r="9" fill="#FFFFFF" fill-opacity=".25"></circle><circle cx="70" cy="14" r="9" fill="#E5484D"></circle></g>
+<path d="M60 360h420l-26 36H86z" fill="#0B2A5B"></path>
+<rect x="60" y="356" width="420" height="10" rx="5" fill="#9CC6FB"></rect>
+</svg>
+
+<div class="float-a [position:absolute] [left:-2%] [bottom:6%] [width:min(58%,270px)] [background:#FFFFFF] [border-radius:20px] [padding:14px] [box-shadow:0_18px_40px_rgba(5,40,120,.22)] [display:flex] [gap:12px] [align-items:center]">
+<span class="[flex:none] [width:52px] [height:52px] [border-radius:50%] [background:linear-gradient(135deg,#087BFA,#5B4BEA)] [display:flex] [align-items:center] [justify-content:center]">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>
+</span>
+<div class="[min-width:0]">
+<div class="[font-weight:700] [font-size:15px] [color:#0B2A5B] [display:flex] [align-items:center] [gap:6px]">Dr. Chapatín
+<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#087BFA"></circle><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+<div class="[font-size:13px] [color:#4A5B78]">Medicina general</div>
+<div class="[margin-top:6px] [display:inline-flex] [align-items:center] [gap:6px] [font-size:12px] [font-weight:600] [color:#0A5C2E] [background:#E3F7EA] [border-radius:999px] [padding:3px_10px]"><span class="[width:7px] [height:7px] [border-radius:50%] [background:#1FA45A]"></span>Disponible 3:50 PM</div>
+</div>
+</div>
+
+<div class="float-b [position:absolute] [right:-1%] [top:7%] [background:#FFFFFF] [border-radius:18px] [padding:12px_16px] [box-shadow:0_18px_40px_rgba(5,40,120,.22)] [display:flex] [gap:10px] [align-items:center]">
+<span class="[width:38px] [height:38px] [border-radius:12px] [background:#E3F7EA] [display:flex] [align-items:center] [justify-content:center]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1FA45A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+<div>
+<div class="[font-weight:700] [font-size:14px] [color:#0B2A5B]">Cita confirmada</div>
+<div class="[font-size:12px] [color:#4A5B78]">Mié 30 · 10:30 AM</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="especialidades" class="[background:#FFFFFF]">
+<div class="[max-width:1200px] [margin:0_auto] [padding:96px_24px]">
+<div class="reveal [text-align:center] [max-width:640px] [margin:0_auto]">
+<span class="[color:#0A62D0] [font-weight:700] [font-size:14px] [letter-spacing:.08em] [text-transform:uppercase]">Especialidades</span>
+<h2 class="[margin:12px_0_0] [font-size:clamp(30px,3.6vw,42px)] [line-height:1.15] [font-weight:800] [letter-spacing:-.02em]">Encuentra la especialidad que necesitas</h2>
+<p class="[margin:16px_0_0] [font-size:17px] [line-height:1.6] [color:#4A5B78]">Explora las áreas de la salud disponibles en SaludYA y elige al profesional ideal para ti.</p>
+</div>
+<div class="[margin-top:56px] [display:grid] [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))] [gap:24px]">
+
+<article class="card reveal [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:24px] [padding:28px] [box-shadow:0_6px_20px_rgba(8,80,200,.07)]">
+<span class="[width:56px] [height:56px] [border-radius:16px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.4 12 21 12 21z"></path></svg></span>
+<h3 class="[margin:20px_0_0] [font-size:20px] [font-weight:700]">Cardiología</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Cuidado y seguimiento de la salud de tu corazón.</p>
+<a class="link-arrow [margin-top:18px]" href="medicos.html" data-route="listado-medicos">Ver especialistas <span aria-hidden="true">→</span></a>
+</article>
+
+<article class="card reveal [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:24px] [padding:28px] [box-shadow:0_6px_20px_rgba(8,80,200,.07)]">
+<span class="[width:56px] [height:56px] [border-radius:16px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.2 6 10.5a6 6 0 0 1-12 0C6 9.2 12 3 12 3z"></path><path d="M9.5 14a2.6 2.6 0 0 0 2.5 2"></path></svg></span>
+<h3 class="[margin:20px_0_0] [font-size:20px] [font-weight:700]">Dermatología</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Atención para el cuidado de tu piel, cabello y uñas.</p>
+<a class="link-arrow [margin-top:18px]" href="medicos.html" data-route="listado-medicos">Ver especialistas <span aria-hidden="true">→</span></a>
+</article>
+
+<article class="card reveal [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:24px] [padding:28px] [box-shadow:0_6px_20px_rgba(8,80,200,.07)]">
+<span class="[width:56px] [height:56px] [border-radius:16px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a4 4 0 0 0 8 0V3"></path><path d="M10 13v2a5 5 0 0 0 10 0v-2"></path><circle cx="20" cy="11" r="2"></circle></svg></span>
+<h3 class="[margin:20px_0_0] [font-size:20px] [font-weight:700]">Medicina general</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Consultas generales y seguimiento de tu salud.</p>
+<a class="link-arrow [margin-top:18px]" href="medicos.html" data-route="listado-medicos">Ver especialistas <span aria-hidden="true">→</span></a>
+</article>
+
+<article class="card reveal [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:24px] [padding:28px] [box-shadow:0_6px_20px_rgba(8,80,200,.07)]">
+<span class="[width:56px] [height:56px] [border-radius:16px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14a4.5 4.5 0 0 0 7 0"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></span>
+<h3 class="[margin:20px_0_0] [font-size:20px] [font-weight:700]">Pediatría</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Atención médica para el crecimiento de niños y adolescentes.</p>
+<a class="link-arrow [margin-top:18px]" href="medicos.html" data-route="listado-medicos">Ver especialistas <span aria-hidden="true">→</span></a>
+</article>
+
+<article class="card reveal [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:24px] [padding:28px] [box-shadow:0_6px_20px_rgba(8,80,200,.07)]">
+<span class="[width:56px] [height:56px] [border-radius:16px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"></path><path d="M9 11.5h6M9 14.5h3"></path></svg></span>
+<h3 class="[margin:20px_0_0] [font-size:20px] [font-weight:700]">Psicología</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Espacios de escucha para cuidar tu bienestar emocional.</p>
+<a class="link-arrow [margin-top:18px]" href="medicos.html" data-route="listado-medicos">Ver especialistas <span aria-hidden="true">→</span></a>
+</article>
+
+<article class="card reveal [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:24px] [padding:28px] [box-shadow:0_6px_20px_rgba(8,80,200,.07)]">
+<span class="[width:56px] [height:56px] [border-radius:16px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"></path></svg></span>
+<h3 class="[margin:20px_0_0] [font-size:20px] [font-weight:700]">Neurología</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Evaluación y seguimiento del sistema nervioso y el cerebro.</p>
+<a class="link-arrow [margin-top:18px]" href="medicos.html" data-route="listado-medicos">Ver especialistas <span aria-hidden="true">→</span></a>
+</article>
+
+</div>
+</div>
+</section>
+
+<section id="medicos" class="[background:#F3F8FF]">
+<div class="[max-width:1200px] [margin:0_auto] [padding:96px_24px]">
+<div class="reveal [display:flex] [flex-wrap:wrap] [align-items:flex-end] [justify-content:space-between] [gap:20px]">
+<div class="[max-width:620px]">
+<span class="[color:#0A62D0] [font-weight:700] [font-size:14px] [letter-spacing:.08em] [text-transform:uppercase]">Médicos recomendados</span>
+<h2 class="[margin:12px_0_0] [font-size:clamp(30px,3.6vw,42px)] [line-height:1.15] [font-weight:800] [letter-spacing:-.02em]">Conoce a nuestros especialistas</h2>
+</div>
+<a class="btn btn-ghost" href="medicos.html" data-route="listado-medicos">Ver todos los médicos</a>
+</div>
+<div class="[margin-top:48px] [display:grid] [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))] [gap:24px]">
+@for (d of doctors; track d.name) {
+<article class="card reveal [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:24px] [padding:24px] [box-shadow:0_6px_20px_rgba(8,80,200,.07)] [display:flex] [flex-direction:column]">
+<div class="[display:flex] [gap:16px] [align-items:center]">
+<span class="[flex:none] [width:72px] [height:72px] [border-radius:50%] [background:linear-gradient(135deg,#087BFA,#5B4BEA)] [display:flex] [align-items:center] [justify-content:center] [box-shadow:0_8px_18px_rgba(8,123,250,.3)]">
+<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>
+</span>
+<div class="[min-width:0]">
+<h3 class="[margin:0] [font-size:19px] [font-weight:700] [display:flex] [align-items:center] [gap:6px]">{{d.name}}
+<svg width="16" height="16" viewBox="0 0 24 24" aria-label="Médico verificado" role="img"><circle cx="12" cy="12" r="11" fill="#087BFA"></circle><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></h3>
+<div class="[font-size:14px] [color:#4A5B78] [margin-top:2px]">{{d.spec}}</div>
+<div class="[display:flex] [align-items:center] [gap:6px] [margin-top:6px] [font-size:14px] [font-weight:700] [color:#0B2A5B]" aria-label="Calificación 5 de 5">
+<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z" fill="#F5B301"></path></svg>5.0
+</div>
+</div>
+</div>
+<div class="[margin-top:18px] [display:flex] [flex-wrap:wrap] [gap:8px]">
+<span class="[display:inline-flex] [align-items:center] [gap:6px] [font-size:13px] [font-weight:500] [color:#2B3F63] [background:#F3F8FF] [border-radius:999px] [padding:6px_12px]">Consulta privada</span>
+<span class="[display:inline-flex] [align-items:center] [gap:6px] [font-size:13px] [font-weight:600] [color:#0A5C2E] [background:#E3F7EA] [border-radius:999px] [padding:6px_12px]"><span class="[width:7px] [height:7px] [border-radius:50%] [background:#1FA45A]"></span>{{d.avail}}</span>
+</div>
+<div class="[margin-top:22px] [display:flex] [gap:10px] [margin-top:auto] [padding-top:22px]">
+<a class="btn btn-ghost [flex:1] [padding:0_12px]" href="medicos.html" data-route="listado-medicos">Ver perfil</a>
+<a class="btn btn-primary [flex:1] [padding:0_12px]" href="reservar.html" data-route="reserva-citas">Reservar cita</a>
+</div>
+</article>
+}
+</div>
+</div>
+</section>
+
+<section id="como-funciona" class="[background:#FFFFFF]">
+<div class="[max-width:1200px] [margin:0_auto] [padding:96px_24px]">
+<div class="reveal [text-align:center] [max-width:680px] [margin:0_auto]">
+<span class="[color:#0A62D0] [font-weight:700] [font-size:14px] [letter-spacing:.08em] [text-transform:uppercase]">Cómo funciona</span>
+<h2 class="[margin:12px_0_0] [font-size:clamp(30px,3.6vw,42px)] [line-height:1.15] [font-weight:800] [letter-spacing:-.02em]">Recibe atención médica en pocos pasos</h2>
+</div>
+<div class="[position:relative] [margin-top:64px]">
+<div class="step-line"></div>
+<ol class="[list-style:none] [margin:0] [padding:0] [display:grid] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))] [gap:32px] [position:relative] [z-index:1]">
+<li class="reveal [text-align:center]">
+<div class="[width:68px] [height:68px] [margin:0_auto] [border-radius:50%] [background:linear-gradient(135deg,#087BFA,#5B4BEA)] [color:#FFFFFF] [font-size:30px] [font-weight:800] [display:flex] [align-items:center] [justify-content:center] [box-shadow:0_0_0_8px_#FFFFFF,0_12px_24px_rgba(8,123,250,.3)]">1</div>
+<span class="[margin:22px_auto_0] [width:52px] [height:52px] [border-radius:14px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="4"></circle><path d="M2.5 20c0-4 3.4-6.5 7.5-6.5M18 14v6M15 17h6"></path></svg></span>
+<h3 class="[margin:16px_0_0] [font-size:19px] [font-weight:700]">Regístrate</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Crea tu cuenta en SaludYA.</p>
+</li>
+<li class="reveal [text-align:center]">
+<div class="[width:68px] [height:68px] [margin:0_auto] [border-radius:50%] [background:linear-gradient(135deg,#087BFA,#5B4BEA)] [color:#FFFFFF] [font-size:30px] [font-weight:800] [display:flex] [align-items:center] [justify-content:center] [box-shadow:0_0_0_8px_#FFFFFF,0_12px_24px_rgba(8,123,250,.3)]">2</div>
+<span class="[margin:22px_auto_0] [width:52px] [height:52px] [border-radius:14px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20.5 20.5L16 16"></path></svg></span>
+<h3 class="[margin:16px_0_0] [font-size:19px] [font-weight:700]">Encuentra tu especialista</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Selecciona la especialidad o médico que necesitas.</p>
+</li>
+<li class="reveal [text-align:center]">
+<div class="[width:68px] [height:68px] [margin:0_auto] [border-radius:50%] [background:linear-gradient(135deg,#087BFA,#5B4BEA)] [color:#FFFFFF] [font-size:30px] [font-weight:800] [display:flex] [align-items:center] [justify-content:center] [box-shadow:0_0_0_8px_#FFFFFF,0_12px_24px_rgba(8,123,250,.3)]">3</div>
+<span class="[margin:22px_auto_0] [width:52px] [height:52px] [border-radius:14px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 10h18"></path></svg></span>
+<h3 class="[margin:16px_0_0] [font-size:19px] [font-weight:700]">Reserva tu cita</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Elige la fecha y horario disponible.</p>
+</li>
+<li class="reveal [text-align:center]">
+<div class="[width:68px] [height:68px] [margin:0_auto] [border-radius:50%] [background:linear-gradient(135deg,#087BFA,#5B4BEA)] [color:#FFFFFF] [font-size:30px] [font-weight:800] [display:flex] [align-items:center] [justify-content:center] [box-shadow:0_0_0_8px_#FFFFFF,0_12px_24px_rgba(8,123,250,.3)]">4</div>
+<span class="[margin:22px_auto_0] [width:52px] [height:52px] [border-radius:14px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l3 3 5-6"></path></svg></span>
+<h3 class="[margin:16px_0_0] [font-size:19px] [font-weight:700]">Confirma tu consulta</h3>
+<p class="[margin:8px_0_0] [font-size:15px] [line-height:1.55] [color:#4A5B78]">Revisa los datos y confirma tu reserva.</p>
+</li>
+</ol>
+</div>
+</div>
+</section>
+
+<section id="beneficios" class="[background:#F3F8FF]">
+<div class="[max-width:1200px] [margin:0_auto] [padding:96px_24px] [display:flex] [flex-wrap:wrap] [align-items:center] [gap:56px]">
+<div class="reveal [flex:1_1_480px] [min-width:0]">
+<span class="[color:#0A62D0] [font-weight:700] [font-size:14px] [letter-spacing:.08em] [text-transform:uppercase]">Beneficios</span>
+<h2 class="[margin:12px_0_0] [font-size:clamp(30px,3.6vw,42px)] [line-height:1.15] [font-weight:800] [letter-spacing:-.02em]">La atención médica que necesitas, más cerca de ti</h2>
+<ul class="[list-style:none] [margin:36px_0_0] [padding:0] [display:grid] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))] [gap:20px]">
+<li class="card [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:20px] [padding:22px]">
+<span class="[width:44px] [height:44px] [border-radius:12px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M17 8l1.5 1.5L21 7"></path></svg></span>
+<h3 class="[margin:14px_0_0] [font-size:17px] [font-weight:700]">Acceso sencillo a especialistas</h3>
+</li>
+<li class="card [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:20px] [padding:22px]">
+<span class="[width:44px] [height:44px] [border-radius:12px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 10h18M9 15l2 2 4-4"></path></svg></span>
+<h3 class="[margin:14px_0_0] [font-size:17px] [font-weight:700]">Reserva de citas en pocos pasos</h3>
+</li>
+<li class="card [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:20px] [padding:22px]">
+<span class="[width:44px] [height:44px] [border-radius:12px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+<h3 class="[margin:14px_0_0] [font-size:17px] [font-weight:700]">Gestión de tus citas médicas</h3>
+</li>
+<li class="card [background:#FFFFFF] [border:1px_solid_#E3EEFC] [border-radius:20px] [padding:22px]">
+<span class="[width:44px] [height:44px] [border-radius:12px] [background:#EAF3FF] [display:flex] [align-items:center] [justify-content:center]"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#087BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"></path><path d="M14 3v5h5M10 13h6M10 17h4"></path></svg></span>
+<h3 class="[margin:14px_0_0] [font-size:17px] [font-weight:700]">Información organizada de tus consultas</h3>
+</li>
+</ul>
+</div>
+
+<div class="reveal [flex:1_1_360px] [min-width:0] [display:flex] [justify-content:center]">
+<div class="[width:100%] [max-width:400px] [background:#FFFFFF] [border-radius:28px] [padding:24px] [box-shadow:0_24px_60px_rgba(8,80,200,.2)] [border:1px_solid_#E3EEFC]">
+<div class="[font-size:12px] [font-weight:700] [color:#0A62D0] [letter-spacing:.06em]">PASO 1 DE 2</div>
+<div class="[margin-top:4px] [font-size:20px] [font-weight:800]">Elige el mejor horario para ti</div>
+<div class="[margin-top:18px] [font-size:13px] [font-weight:700] [color:#2B3F63]">Fecha disponible</div>
+<div class="[margin-top:8px] [display:grid] [grid-template-columns:repeat(5,minmax(0,1fr))] [gap:6px] [text-align:center]">
+<div class="[background:#0A6AE0] [color:#FFFFFF] [border-radius:10px] [padding:8px_0] [font-size:11px]">Vie<br><b class="[font-size:15px]">25</b></div>
+<div class="[background:#F3F8FF] [border-radius:10px] [padding:8px_0] [font-size:11px] [color:#2B3F63]">Sáb<br><b class="[font-size:15px]">26</b></div>
+<div class="[background:#F3F8FF] [border-radius:10px] [padding:8px_0] [font-size:11px] [color:#2B3F63]">Dom<br><b class="[font-size:15px]">27</b></div>
+<div class="[background:#F3F8FF] [border-radius:10px] [padding:8px_0] [font-size:11px] [color:#2B3F63]">Lun<br><b class="[font-size:15px]">28</b></div>
+<div class="[background:#F3F8FF] [border-radius:10px] [padding:8px_0] [font-size:11px] [color:#2B3F63]">Mar<br><b class="[font-size:15px]">29</b></div>
+</div>
+<div class="[margin-top:16px] [font-size:13px] [font-weight:700] [color:#2B3F63]">Horarios para Vie 25</div>
+<div class="[margin-top:8px] [display:grid] [grid-template-columns:repeat(3,minmax(0,1fr))] [gap:6px] [text-align:center] [font-size:12px] [font-weight:600]">
+<div class="[border:1px_solid_#D4E4FA] [border-radius:10px] [padding:9px_0] [color:#2B3F63]">9:00 AM</div>
+<div class="[border:2px_solid_#087BFA] [background:#EAF3FF] [border-radius:10px] [padding:8px_0] [color:#0A4FB0]">10:30 AM</div>
+<div class="[border:1px_solid_#D4E4FA] [border-radius:10px] [padding:9px_0] [color:#2B3F63]">12:30 PM</div>
+</div>
+<div class="[margin-top:16px] [font-size:13px] [font-weight:700] [color:#2B3F63]">Modalidad</div>
+<div class="[margin-top:8px] [display:flex] [flex-wrap:wrap] [gap:6px] [font-size:12px] [font-weight:600]">
+<span class="[background:#EAF3FF] [border:1px_solid_#087BFA] [color:#0A4FB0] [border-radius:8px] [padding:7px_12px]">✓ Presencial</span>
+<span class="[border:1px_solid_#D4E4FA] [color:#2B3F63] [border-radius:8px] [padding:7px_12px]">Videollamada</span>
+<span class="[border:1px_solid_#D4E4FA] [color:#2B3F63] [border-radius:8px] [padding:7px_12px]">Chat</span>
+</div>
+<div class="[margin-top:20px] [background:#0A6AE0] [color:#FFFFFF] [border-radius:12px] [text-align:center] [padding:13px_0] [font-size:14px] [font-weight:700]">Continuar a confirmación</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="[background:#FFFFFF] [padding:96px_24px_0]">
+<div class="reveal [max-width:1200px] [margin:0_auto] [border-radius:36px] [background:linear-gradient(120deg,#0A5FD8_0%,#4A4BE0_60%,#6D3FE0_100%)] [padding:64px_48px] [display:flex] [flex-wrap:wrap] [align-items:center] [gap:40px] [position:relative] [overflow:hidden]">
+<div class="[position:absolute] [top:-80px] [right:-60px] [width:300px] [height:300px] [border-radius:50%] [background:rgba(255,255,255,.08)]"></div>
+<div class="[flex:1_1_400px] [min-width:0] [position:relative]">
+<h2 class="[margin:0] [color:#FFFFFF] [font-size:clamp(30px,3.8vw,46px)] [line-height:1.12] [font-weight:800] [letter-spacing:-.02em]">Comienza a cuidar tu salud hoy</h2>
+<p class="[margin:18px_0_0] [color:#E6EFFF] [font-size:18px] [line-height:1.6] [max-width:500px]">Únete a SaludYA y descubre una manera más sencilla de acceder a servicios médicos.</p>
+<div class="[margin-top:32px] [display:flex] [flex-wrap:wrap] [gap:14px]">
+<a class="btn btn-white [min-height:52px] [padding:0_28px] [font-size:16px]" routerLink="/registro" data-route="registro-pacientes">Crear cuenta</a>
+<a class="btn btn-outline-white [min-height:52px] [padding:0_28px] [font-size:16px]" routerLink="/login" data-route="iniciar-sesion">Iniciar sesión</a>
+</div>
+</div>
+<div class="[flex:1_1_280px] [min-width:0] [display:flex] [justify-content:center] [position:relative]">
+<svg viewBox="0 0 320 260" class="[width:100%] [max-width:340px] [height:auto]" role="img" aria-label="Ilustración de cruz médica con pulso cardíaco">
+<rect x="70" y="20" width="180" height="180" rx="48" fill="#FFFFFF" fill-opacity=".16"></rect>
+<path d="M135 50h50v50h50v50h-50v50h-50v-50H85v-50h50z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round"></path>
+<path d="M30 215h60l14-30 22 52 20-40 14 18h130" fill="none" stroke="#9CC6FB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="262" cy="44" r="10" fill="#9CC6FB"></circle><circle cx="48" cy="80" r="7" fill="#FFFFFF" fill-opacity=".6"></circle>
+</svg>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer id="contacto" class="[background:#0B2A5B] [margin-top:96px]">
+<div class="[max-width:1200px] [margin:0_auto] [padding:64px_24px_28px]">
+<div class="[display:flex] [flex-wrap:wrap] [gap:40px_56px] [justify-content:space-between]">
+<div class="[flex:2_1_280px] [min-width:0] [max-width:380px]">
+<div class="[display:flex] [align-items:center] [gap:10px]">
+<span class="[width:40px] [height:40px] [border-radius:12px] [background:linear-gradient(135deg,#087BFA,#5B4BEA)] [display:flex] [align-items:center] [justify-content:center]"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"></path></svg></span>
+<span class="[font-size:22px] [font-weight:800] [color:#FFFFFF]">SaludYA</span>
+</div>
+<p class="[margin:16px_0_0] [font-size:15px] [line-height:1.6] [color:#C9DDF8]">Plataforma de atención médica digital para encontrar especialistas y reservar tus citas de forma rápida, segura y sencilla.</p>
+</div>
+<nav aria-label="Navegación del pie" class="[flex:1_1_150px] [min-width:0]">
+<h3 class="[margin:0_0_10px] [font-size:15px] [font-weight:700] [color:#FFFFFF]">Navegación</h3>
+<a class="footlink" href="#inicio">Inicio</a>
+<a class="footlink" href="#especialidades">Especialidades</a>
+<a class="footlink" href="#medicos">Médicos</a>
+<a class="footlink" href="#como-funciona">Cómo funciona</a>
+</nav>
+<nav aria-label="Especialidades" class="[flex:1_1_150px] [min-width:0]">
+<h3 class="[margin:0_0_10px] [font-size:15px] [font-weight:700] [color:#FFFFFF]">Especialidades</h3>
+<a class="footlink" href="medicos.html" data-route="listado-medicos">Cardiología</a>
+<a class="footlink" href="medicos.html" data-route="listado-medicos">Dermatología</a>
+<a class="footlink" href="medicos.html" data-route="listado-medicos">Medicina general</a>
+<a class="footlink" href="medicos.html" data-route="listado-medicos">Pediatría</a>
+</nav>
+<div class="[flex:1_1_200px] [min-width:0]">
+<h3 class="[margin:0_0_10px] [font-size:15px] [font-weight:700] [color:#FFFFFF]">Contacto</h3>
+<div class="[font-size:14px] [color:#C9DDF8] [padding:6px_0]">[Correo de contacto]</div>
+<div class="[font-size:14px] [color:#C9DDF8] [padding:6px_0]">[Teléfono de contacto]</div>
+<div class="[font-size:14px] [color:#C9DDF8] [padding:6px_0]">[Ciudad, Perú]</div>
+</div>
+</div>
+<div class="[margin-top:48px] [padding-top:24px] [border-top:1px_solid_rgba(255,255,255,.16)] [display:flex] [flex-wrap:wrap] [gap:12px_28px] [justify-content:space-between] [align-items:center]">
+<div class="[font-size:14px] [color:#C9DDF8]">© 2026 SaludYA. Todos los derechos reservados.</div>
+<div class="[display:flex] [flex-wrap:wrap] [gap:6px_24px]">
+<a class="footlink [display:inline-block]" href="terminos.html">Términos y condiciones</a>
+<a class="footlink [display:inline-block]" href="privacidad.html">Política de privacidad</a>
+</div>
+</div>
+</div>
