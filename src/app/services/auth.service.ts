@@ -12,6 +12,7 @@ export interface LoginResponse {
 }
 
 const TOKEN_KEY = 'saludya_token';
+const EMAIL_KEY = 'saludya_demo_email';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -21,26 +22,21 @@ export class AuthService {
   private readonly loginUrl = '/api/auth/login';
 
   loginDemo(email: string, remember: boolean): void {
-    const storage = remember ? localStorage : sessionStorage;
-    storage.setItem(TOKEN_KEY, `demo-${Date.now()}`);
-    storage.setItem('saludya_demo_email', email);
+    this.persistSession(`demo-${Date.now()}`, remember, email);
   }
 
   login(credentials: LoginCredentials, remember: boolean): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(this.loginUrl, credentials).pipe(
       tap(({ token }) => {
         // "Recordarme": sesión persistente; si no, dura solo la pestaña
-        const storage = remember ? localStorage : sessionStorage;
-        storage.setItem(TOKEN_KEY, token);
+        this.persistSession(token, remember);
       })
     );
   }
 
   logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem('saludya_demo_email');
-    sessionStorage.removeItem('saludya_demo_email');
+    this.clearStorage(localStorage);
+    this.clearStorage(sessionStorage);
   }
 
   get token(): string | null {
@@ -49,5 +45,20 @@ export class AuthService {
 
   get isLoggedIn(): boolean {
     return !!this.token;
+  }
+
+  private persistSession(token: string, remember: boolean, email?: string): void {
+    const keep = remember ? localStorage : sessionStorage;
+    const drop = remember ? sessionStorage : localStorage;
+    keep.setItem(TOKEN_KEY, token);
+    if (email !== undefined) {
+      keep.setItem(EMAIL_KEY, email);
+    }
+    this.clearStorage(drop);
+  }
+
+  private clearStorage(storage: Storage): void {
+    storage.removeItem(TOKEN_KEY);
+    storage.removeItem(EMAIL_KEY);
   }
 }

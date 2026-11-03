@@ -1,0 +1,77 @@
+<main class="doctors-page">
+  <header class="intro">
+    <div><span class="eyebrow">DIRECTORIO MÉDICO</span><h1>Encuentra a tu especialista</h1><p>Encuentra profesionales de salud y reserva tu próxima consulta.</p></div>
+    <span class="demo-note">Directorio de demostración</span>
+  </header>
+
+  <form class="search" (submit)="$event.preventDefault(); applyFilters()">
+    <span aria-hidden="true">⌕</span><input aria-label="Buscar médico" [value]="draftFilters().query" (input)="update('query', $any($event.target).value)" placeholder="Buscar médico, especialidad o enfermedad">
+    <button type="submit">Buscar</button>
+  </form>
+
+  <app-specialty-strip [selected]="draftFilters().specialty" (select)="quickSpecialty($event)" />
+
+  <section class="directory">
+    <aside class="filters">
+      <div class="filter-heading"><div><span>AFINA TU BÚSQUEDA</span><h2>Filtros</h2></div><button type="button" (click)="clearFilters()">Limpiar</button></div>
+      <label>Especialidad<select [value]="draftFilters().specialty" (change)="update('specialty',$any($event.target).value)"><option value="">Todas</option>@for(specialty of specialties;track specialty){<option [value]="specialty">{{specialty}}</option>}</select></label>
+      <label>Ubicación<select [value]="draftFilters().location" (change)="update('location',$any($event.target).value)"><option value="">Cualquier ubicación</option>@for(location of locations();track location){<option [value]="location">{{location}}</option>}</select></label>
+      <label>Modalidad<select [value]="draftFilters().modality" (change)="update('modality',$any($event.target).value)"><option value="">Todas</option><option value="presencial">Presencial</option><option value="virtual">Virtual</option></select></label>
+      <label>Disponibilidad<select [value]="draftFilters().availability" (change)="update('availability',$any($event.target).value)"><option value="">Cualquier fecha</option><option value="hoy">Hoy</option><option value="manana">Mañana</option><option value="semana">Esta semana</option></select></label>
+      <label>Precio de consulta<select [value]="priceRange()" (change)="setPriceRange($any($event.target).value)"><option value="">Cualquier precio</option><option value="low">Hasta S/ 100</option><option value="mid">S/ 101–150</option><option value="high">Más de S/ 150</option></select></label>
+      <label>Calificación mínima<select [value]="draftFilters().minRating ?? ''" (change)="update('minRating',$any($event.target).value ? +$any($event.target).value : null)"><option value="">Cualquiera</option><option value="4">4+ estrellas</option><option value="4.5">4.5+ estrellas</option></select></label>
+      <label>Género<select [value]="draftFilters().gender" (change)="update('gender',$any($event.target).value)"><option value="">Cualquiera</option><option value="femenino">Mujer</option><option value="masculino">Hombre</option></select></label>
+      <label>Idioma<select [value]="draftFilters().language" (change)="update('language',$any($event.target).value)"><option value="">Cualquiera</option><option>Español</option><option>Inglés</option><option>Quechua</option></select></label>
+      <button class="apply-filters" type="button" (click)="applyFilters()">Aplicar filtros</button><p>Los especialistas del catálogo actual son datos de demostración.</p>
+    </aside>
+
+    <section class="results" aria-label="Resultados de médicos">
+      <div class="results-head"><div><span class="eyebrow">ESPECIALISTAS</span><h2>Profesionales disponibles</h2><p>{{selectedDoctors().length}} resultados</p></div><label class="sort-label">Ordenar por<select [value]="sort()" (change)="setSort($any($event.target).value)"><option value="relevancia">Relevancia</option><option value="calificacion">Mejor calificados</option><option value="precio">Menor precio</option><option value="experiencia">Mayor experiencia</option><option value="disponibilidad">Próxima disponibilidad</option></select></label></div>
+      @if(service.loading()){<div class="state"><span class="spinner"></span><strong>Cargando especialistas…</strong></div>}
+      @else if(service.error()){<div class="state error"><strong>{{service.error()}}</strong><button type="button" (click)="service.load()">Reintentar</button></div>}
+      @else if(!selectedDoctors().length){<div class="state empty"><span>⌕</span><strong>No encontramos especialistas con esos criterios</strong><p>Prueba cambiando la búsqueda o limpia los filtros.</p><button type="button" (click)="clearFilters()">Limpiar filtros</button></div>}
+      @else {
+        <div class="doctor-grid">
+          @for(doctor of visibleDoctors();track doctor.id){
+            <article class="doctor-card">
+              <div class="card-label"><span class="demo-tag">DEMO</span><span class="online"><i></i>Disponible</span></div>
+              <div class="doctor-identity"><span class="avatar" [style.background]="doctor.color">{{doctor.initials}}</span><div><h3>{{fullName(doctor)}}</h3><p>{{doctor.specialty}}</p><small>{{doctor.license}}</small></div></div>
+              <p class="bio">{{doctor.bio}}</p>
+              <div class="metrics"><span><strong>★ {{doctor.rating}}</strong><small>{{doctor.reviewCount}} opiniones demo</small></span><span><strong>{{doctor.yearsExperience}} años</strong><small>experiencia</small></span><span><strong>S/ {{doctor.price}}</strong><small>por consulta</small></span></div>
+              <div class="tags"><span>{{doctor.modalities.includes('virtual') && doctor.modalities.includes('presencial') ? 'Presencial · Virtual' : doctor.modalities[0]}}</span><span>{{doctor.location}}, {{doctor.city}}</span><span>{{doctor.languages[0]}}</span></div>
+              <p class="next-availability"><i></i><span>Próxima cita<br><strong>{{nextSlot(doctor)?.date ? (nextSlot(doctor)?.date + 'T00:00:00' | date:'EEE d MMM') : 'Sin horarios'}}</strong> · {{nextSlot(doctor)?.time}}</span></p>
+              <div class="card-actions"><button class="secondary" type="button" (click)="showProfile(doctor)">Ver perfil</button><button class="primary" type="button" (click)="startBooking(doctor)">Reservar cita</button></div>
+            </article>
+          }
+        </div>
+        @if(canLoadMore()){<button class="load-more" type="button" (click)="page.update(n=>n+1)">Cargar más especialistas</button>}
+      }
+    </section>
+  </section>
+</main>
+
+@if(profile(); as doctor){
+  <div class="overlay" (click)="profile.set(null)"><section class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-name" (click)="$event.stopPropagation()">
+    <button class="close" type="button" aria-label="Cerrar" (click)="profile.set(null)">×</button><div class="modal-cover"></div><div class="modal-content">
+      <div class="profile-title"><span class="avatar large" [style.background]="doctor.color">{{doctor.initials}}</span><div><span class="demo-tag">PERFIL DE DEMOSTRACIÓN</span><h2 id="profile-name">{{fullName(doctor)}}</h2><p>{{doctor.specialty}} · {{doctor.license}}</p><strong class="stars">★ {{doctor.rating}} <small>({{doctor.reviewCount}} opiniones de ejemplo)</small></strong></div></div>
+      <p class="profile-bio">{{doctor.bio}}</p><h3>Información profesional</h3><div class="profile-grid"><article><small>FORMACIÓN</small><strong>{{doctor.education.join(' · ')}}</strong><span>{{doctor.university}}</span></article><article><small>EXPERIENCIA</small><strong>{{doctor.yearsExperience}} años</strong><span>Trayectoria de demostración</span></article><article><small>ATENCIÓN</small><strong>{{doctor.modalities.join(' · ')}}</strong><span>{{doctor.location}}, {{doctor.city}}</span></article><article><small>CONSULTA</small><strong>S/ {{doctor.price}}</strong><span>Precio ilustrativo</span></article></div>
+      <h3>Opiniones de ejemplo</h3><div class="review-list">@for(review of doctor.reviews;track review.id){<article><strong>★ {{review.rating}} · {{review.author}}</strong><p>“{{review.comment}}”</p><small>{{review.date | date:'d MMM y'}}</small></article>}</div>
+      <h3>Próximos horarios disponibles</h3><div class="profile-slots">@for(slot of doctor.slots;track slot.date+slot.time){@if(!slot.taken){<span>{{slot.date | date:'EEE d MMM'}} · {{slot.time}}</span>}}</div>
+      <button class="primary full" type="button" (click)="startBooking(doctor)">Reservar cita</button>
+    </div>
+  </section></div>
+}
+
+@if(booking(); as doctor){
+  <div class="overlay booking-overlay" (click)="booking.set(null)"><section class="modal booking-modal" role="dialog" aria-modal="true" aria-labelledby="booking-title" (click)="$event.stopPropagation()">
+    <header class="booking-header"><div><span class="demo-tag">RESERVA DE DEMOSTRACIÓN</span><h2 id="booking-title">Reservar cita</h2></div><button class="close" type="button" aria-label="Cerrar" (click)="booking.set(null)">×</button></header>
+    <div class="stepper">@for(step of [1,2,3,4,5];track step){<span [class.active]="bookingStep()>=step">{{step}}</span>}</div>
+    @if(bookingStep()===1){<h3>1. Elige la modalidad</h3><div class="choice-grid">@for(mode of doctor.modalities;track mode){<button type="button" [class.chosen]="visitMode()===mode" (click)="chooseMode(mode)">{{mode==='virtual'?'◉':'⌂'}} <strong>{{mode==='virtual'?'Virtual':'Presencial'}}</strong><small>{{mode==='virtual'?'Videoconsulta demo':doctor.location+', '+doctor.city}}</small></button>}</div>}
+    @if(bookingStep()===2){<h3>2. Elige una fecha disponible</h3><div class="option-grid">@for(date of bookingDates();track date){<button type="button" [class.chosen]="visitDate()===date" (click)="chooseDate(date)">{{date+'T00:00:00'|date:'EEE d MMM'}}</button>}@empty{<p>No hay fechas libres para esta modalidad.</p>}</div>}
+    @if(bookingStep()===3){<h3>3. Selecciona un horario libre</h3><div class="option-grid times">@for(time of bookingTimes();track time){<button type="button" [class.chosen]="visitTime()===time" (click)="visitTime.set(time)">{{time}}</button>}@empty{<p>No hay horarios libres para la fecha elegida.</p>}</div>}
+    @if(bookingStep()===4){<h3>4. Confirma los datos</h3><dl class="summary"><div><dt>Especialista</dt><dd>{{fullName(doctor)}} · {{doctor.specialty}}</dd></div><div><dt>Modalidad</dt><dd>{{visitMode()==='virtual'?'Virtual':'Presencial'}}</dd></div><div><dt>Fecha y hora</dt><dd>{{visitDate()+'T00:00:00'|date:'fullDate'}} · {{visitTime()}}</dd></div><div><dt>Precio de demostración</dt><dd>S/ {{doctor.price}}</dd></div></dl><p class="warning">Al confirmar se guardará en «Mis citas» de esta sesión de demostración. No se notificará a ningún médico real.</p>}
+    @if(bookingStep()===5){<div class="success"><span>✓</span><h3>Reserva de demostración registrada</h3><p>{{fullName(doctor)}} · {{visitMode()==='virtual'?'Virtual':'Presencial'}}</p><p>{{visitDate()+'T00:00:00'|date:'fullDate'}} · {{visitTime()}}</p><strong>La cita aparece en «Mis citas» durante esta sesión.</strong></div>}
+    @if(bookingMessage()){<p class="error-message" role="alert">{{bookingMessage()}}</p>}
+    <footer class="booking-actions">@if(bookingStep()>1&&bookingStep()<5){<button class="secondary" type="button" (click)="previousStep()">Atrás</button>}@if(bookingStep()<4){<button class="primary" type="button" [disabled]="(bookingStep()===1&&!visitMode())||(bookingStep()===2&&!visitDate())||(bookingStep()===3&&!visitTime())" (click)="nextStep()">Continuar</button>}@if(bookingStep()===4){<button class="primary" type="button" [disabled]="bookingBusy()" (click)="confirmBooking()">{{bookingBusy()?'Confirmando…':'Confirmar cita demo'}}</button>}@if(bookingStep()===5){<button class="primary" type="button" (click)="booking.set(null)">Terminar</button>}</footer>
+  </section></div>
+}
