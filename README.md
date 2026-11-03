@@ -4,7 +4,7 @@ Este proyecto es una maqueta de diseño de SaludYA, una plataforma digital de sa
 
 El proyecto sirve como referencia visual para el desarrollo de la plataforma. Su estructura, componentes, colores, tipografías, espaciados y distribución deben reproducirse fielmente en la implementación, utilizando Angular y Tailwind CSS, sin copiar directamente el código de la maqueta.
 
-##Contenido
+contenido
 src/ — código fuente de la aplicación, incluyendo componentes, páginas y estilos.
 public/ — recursos estáticos y archivos públicos.
 package.json — dependencias y scripts del proyecto.
