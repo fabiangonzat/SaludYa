@@ -1,21 +1,45 @@
-# Landing SaludYA — design reference
+SaludYA — referencia de diseño
 
-This is a design mockup created in a visual design tool, exported as a
-standalone page. Treat it as a REFERENCE MOCKUP, not production code:
-the markup and inline styles carry the design's precise values — colors,
-font sizes, spacing, radii, shadows, layout — which an implementation
-should replicate faithfully in its own components and styling system
-rather than copy wholesale.
+Este proyecto es una maqueta de diseño de SaludYA, una plataforma digital de salud orientada a conectar pacientes con profesionales médicos y facilitar el acceso a servicios sanitarios.
 
-## Contents
+El proyecto sirve como referencia visual para el desarrollo de la plataforma. Su estructura, componentes, colores, tipografías, espaciados y distribución deben reproducirse fielmente en la implementación, utilizando Angular y Tailwind CSS, sin copiar directamente el código de la maqueta.
 
-- `Main.dc.html` — the artboard (a Design Component: an `<x-dc>`
-  template + a small logic class). The values to replicate live in its
-  inline `style="…"` attributes and the `<helmet><style>` block.
-- `support.js`, `vendor/react*.js` — the runtime that renders the
-  component in a browser; not part of the design.
+Contenido
+src/ — código fuente de la aplicación, incluyendo componentes, páginas y estilos.
+public/ — recursos estáticos y archivos públicos.
+package.json — dependencias y scripts del proyecto.
+angular.json — configuración del proyecto Angular.
+tsconfig.json — configuración de TypeScript.
+Tecnologías utilizadas
+Angular 22
+TypeScript 6
+Tailwind CSS 4
+RxJS
+Angular Router
+Vitest
+Ejecución del proyecto
 
-## Viewing
+Instalar las dependencias:
 
-Serve the folder (e.g. `python3 -m http.server`) and open `Main.dc.html`;
-some browsers block the scripts over file://.
+bash
+npm install
+
+
+Iniciar el servidor de desarrollo:
+
+bash
+npm start
+
+
+Abrir en el navegador la dirección local proporcionada por Angular.
+
+Pruebas
+
+Ejecutar las pruebas del proyecto:
+
+bash
+npm test
+
+Estado del proyecto
+
+El proyecto se encuentra actualmente en desarrollo. El objetivo es evolucionar la propuesta visual inicial hacia una plataforma de salud funcional, implementando progresivamente sus componentes, navegación y funcionalidades principales.
