@@ -1,6 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { WELLNESS_STORAGE_PREFIX } from '../pages/bienestar/wellness.models';
+import { HISTORY_STORAGE_PREFIX } from '../pages/historial/history.models';
+import { APPOINTMENT_STORAGE_PREFIX } from './appointments.models';
 
 export interface LoginCredentials {
   email: string;
@@ -37,6 +40,7 @@ export class AuthService {
   logout(): void {
     this.clearStorage(localStorage);
     this.clearStorage(sessionStorage);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('saludya:logout'));
   }
 
   get token(): string | null {
@@ -55,10 +59,17 @@ export class AuthService {
       keep.setItem(EMAIL_KEY, email);
     }
     this.clearStorage(drop);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('saludya:session-changed'));
   }
 
   private clearStorage(storage: Storage): void {
     storage.removeItem(TOKEN_KEY);
     storage.removeItem(EMAIL_KEY);
+    const wellnessKeys: string[] = [];
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (key?.startsWith(WELLNESS_STORAGE_PREFIX) || key?.startsWith(HISTORY_STORAGE_PREFIX) || key?.startsWith(APPOINTMENT_STORAGE_PREFIX)) wellnessKeys.push(key);
+    }
+    wellnessKeys.forEach((key) => storage.removeItem(key));
   }
 }

@@ -8,6 +8,7 @@ export interface DoctorsApi {
   list(): Observable<Doctor[]>;
   getById(id: string): Observable<Doctor>;
   occupySlot(doctorId: string, date: string, time: string): Observable<Doctor>;
+  releaseSlot(doctorId: string, date: string, time: string): Observable<Doctor>;
 }
 
 export const DOCTORS_API = new InjectionToken<DoctorsApi>('DOCTORS_API');
@@ -42,6 +43,15 @@ function createDemoApi(): DoctorsApi {
         const slot = doctor.slots.find((item) => item.date === date && item.time === time && !item.taken);
         if (!slot) throw new Error('slot-taken');
         slot.taken = true;
+        catalog = catalog.map((item) => (item.id === doctorId ? { ...doctor, slots: doctor.slots.map((s) => ({ ...s })) } : item));
+        return cloneDoctors([doctor])[0];
+      }),
+    releaseSlot: (doctorId, date, time) =>
+      lag(() => {
+        const doctor = catalog.find((item) => item.id === doctorId);
+        if (!doctor) throw new Error('not-found');
+        const slot = doctor.slots.find((item) => item.date === date && item.time === time);
+        if (slot) slot.taken = false;
         catalog = catalog.map((item) => (item.id === doctorId ? { ...doctor, slots: doctor.slots.map((s) => ({ ...s })) } : item));
         return cloneDoctors([doctor])[0];
       }),
@@ -81,6 +91,12 @@ export class DoctorsService {
       tap((updated) => {
         this.doctors.update((list) => list.map((item) => (item.id === updated.id ? updated : item)));
       }),
+    );
+  }
+
+  releaseSlot(doctorId: string, date: string, time: string): Observable<Doctor> {
+    return this.api.releaseSlot(doctorId, date, time).pipe(
+      tap((updated) => this.doctors.update((list) => list.map((item) => (item.id === updated.id ? updated : item)))),
     );
   }
 }

@@ -89,13 +89,35 @@ export const SPECIALTIES = [
   'Cardiología',
   'Dermatología',
   'Pediatría',
-  'Ginecología',
+  'Ginecología y obstetricia',
   'Neurología',
   'Oftalmología',
-  'Traumatología',
+  'Traumatología y ortopedia',
   'Odontología',
   'Psicología',
+  'Psiquiatría',
+  'Endocrinología',
+  'Gastroenterología',
+  'Urología',
+  'Otorrinolaringología',
+  'Neumología',
+  'Reumatología',
+  'Nefrología',
+  'Oncología',
+  'Nutrición',
 ] as const;
+
+export function doctorSpecialtyName(name: string): string {
+  if (name === 'Ginecología y obstetricia') return 'Ginecología';
+  if (name === 'Traumatología y ortopedia') return 'Traumatología';
+  return name;
+}
+
+export function specialtyFilterLabel(name: string): string {
+  if (name === 'Ginecología') return 'Ginecología y obstetricia';
+  if (name === 'Traumatología') return 'Traumatología y ortopedia';
+  return name;
+}
 
 export function doctorFullName(doctor: Doctor): string {
   return `${doctor.firstName} ${doctor.lastName}`;

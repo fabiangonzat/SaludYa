@@ -4,6 +4,7 @@ import {
   DoctorFilters,
   SortKey,
   TimeSlot,
+  doctorSpecialtyName,
 } from './doctors.models';
 
 export function toYmd(date: Date): string {
@@ -63,7 +64,7 @@ function normalize(value: string): string {
 export function filterDoctors(doctors: Doctor[], filters: DoctorFilters, now = new Date()): Doctor[] {
   const query = normalize(filters.query);
   return doctors.filter((doctor) => {
-    if (filters.specialty && doctor.specialty !== filters.specialty) return false;
+    if (filters.specialty && doctor.specialty !== doctorSpecialtyName(filters.specialty)) return false;
     if (filters.location && doctor.location !== filters.location) return false;
     if (filters.modality && !doctor.modalities.includes(filters.modality)) return false;
     if (filters.gender && doctor.gender !== filters.gender) return false;

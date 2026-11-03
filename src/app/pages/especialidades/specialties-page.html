@@ -1,0 +1,42 @@
+<main class="specialties-page">
+  <header class="page-intro">
+    <div class="intro-copy"><span class="eyebrow">DIRECTORIO DE SALUD</span><h1>Especialidades médicas</h1><p>Explora nuestras especialidades y encuentra la atención médica que necesitas.</p></div>
+    <a class="doctors-link" routerLink="/medicos"><span>⌕</span> Ver médicos disponibles <b>→</b></a>
+  </header>
+
+  <section class="search-panel" aria-label="Buscar especialidad">
+    <label class="search-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" aria-label="Buscar especialidad médica" placeholder="Buscar especialidad médica..." [value]="query()" (input)="query.set($any($event.target).value)"><button type="button" aria-label="Limpiar búsqueda" [hidden]="!query()" (click)="query.set('')">×</button></label>
+    <div class="catalog-count"><strong>{{visibleSpecialties().length}}</strong><span>{{visibleSpecialties().length===1?'especialidad':'especialidades'}} disponibles</span><small>de {{catalog.length}} en el catálogo</small></div>
+  </section>
+
+  @if(service.loading()){<div class="catalog-status loading"><span class="spinner"></span><span>Consultando disponibilidad del catálogo…</span></div>}
+  @if(service.error()){<div class="catalog-status error" role="status"><span>{{service.error()}}</span><button type="button" (click)="service.load()">Reintentar</button></div>}
+
+  @if(!query() && category()==='Todas'){
+    <section class="featured-section" aria-labelledby="featured-heading">
+      <div class="section-heading"><div><span class="eyebrow">SELECCIÓN EDITORIAL</span><h2 id="featured-heading">Explora nuestras áreas de atención</h2></div><span class="editorial-caption">Selección informativa, sin ranking</span></div>
+      <div class="featured-grid">@for(specialty of featured;track specialty.name){<app-specialty-card [specialty]="specialty" [doctorCount]="countFor(specialty)" (details)="detail.set($event)" />}</div>
+    </section>
+  }
+
+  <section class="catalog-section" aria-labelledby="catalog-heading">
+    <div class="section-heading catalog-title"><div><span class="eyebrow">CATÁLOGO DE SALUD</span><h2 id="catalog-heading">Todas las especialidades</h2></div></div>
+    <div class="category-tabs" role="group" aria-label="Filtrar categorías">
+      @for(item of categories;track item){<button type="button" [class.active]="category()===item" [attr.aria-pressed]="category()===item" (click)="setCategory(item)">{{item}}</button>}
+    </div>
+    @if(visibleSpecialties().length){<div class="specialty-grid">@for(specialty of visibleSpecialties();track specialty.name){<app-specialty-card [specialty]="specialty" [doctorCount]="countFor(specialty)" (details)="detail.set($event)" />}</div>}
+    @else{<div class="empty-state"><span>⌕</span><h3>No encontramos especialidades</h3><p>Prueba con otro término de búsqueda o cambia la categoría.</p><button type="button" (click)="query.set('');category.set('Todas')">Ver todo el catálogo</button></div>}
+  </section>
+
+  <footer class="catalog-footnote"><span class="demo-dot"></span><p>La disponibilidad mostrada se calcula a partir del catálogo actual de profesionales de demostración. Aún no hay un directorio conectado al backend.</p></footer>
+</main>
+
+@if(detail(); as specialty){
+  <div class="overlay" (click)="detail.set(null)"><section class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="specialty-detail-title" (click)="$event.stopPropagation()">
+    <button class="close" type="button" aria-label="Cerrar información" (click)="detail.set(null)">×</button>
+    <div class="modal-title"><span class="modal-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="specialty.icon" /></svg></span><div><span class="eyebrow">ESPECIALIDAD MÉDICA</span><h2 id="specialty-detail-title">{{specialty.name}}</h2></div></div>
+    <p class="overview">{{specialty.overview}}</p><div class="detail-block"><h3>¿Qué área aborda?</h3><p>{{specialty.description}}</p></div>
+    <div class="detail-columns"><div class="detail-block"><h3>Motivos frecuentes de consulta</h3><ul>@for(reason of specialty.reasons;track reason){<li>{{reason}}</li>}</ul></div><div class="detail-block"><h3>Tipos de atención</h3><ul>@for(type of specialty.care;track type){<li>{{type}}</li>}</ul></div></div>
+    <div class="modal-availability"><span><i [class.has-doctors]="(countFor(specialty) ?? 0)>0"></i>{{countFor(specialty) ?? '—'}} médicos en el catálogo de demostración</span><a [routerLink]="['/medicos']" [queryParams]="{especialidad:specialty.name}" (click)="detail.set(null)">Buscar profesionales <b>→</b></a></div>
+  </section></div>
+}

@@ -61,17 +61,3 @@
     </div>
   </section></div>
 }
-
-@if(booking(); as doctor){
-  <div class="overlay booking-overlay" (click)="booking.set(null)"><section class="modal booking-modal" role="dialog" aria-modal="true" aria-labelledby="booking-title" (click)="$event.stopPropagation()">
-    <header class="booking-header"><div><span class="demo-tag">RESERVA DE DEMOSTRACIÓN</span><h2 id="booking-title">Reservar cita</h2></div><button class="close" type="button" aria-label="Cerrar" (click)="booking.set(null)">×</button></header>
-    <div class="stepper">@for(step of [1,2,3,4,5];track step){<span [class.active]="bookingStep()>=step">{{step}}</span>}</div>
-    @if(bookingStep()===1){<h3>1. Elige la modalidad</h3><div class="choice-grid">@for(mode of doctor.modalities;track mode){<button type="button" [class.chosen]="visitMode()===mode" (click)="chooseMode(mode)">{{mode==='virtual'?'◉':'⌂'}} <strong>{{mode==='virtual'?'Virtual':'Presencial'}}</strong><small>{{mode==='virtual'?'Videoconsulta demo':doctor.location+', '+doctor.city}}</small></button>}</div>}
-    @if(bookingStep()===2){<h3>2. Elige una fecha disponible</h3><div class="option-grid">@for(date of bookingDates();track date){<button type="button" [class.chosen]="visitDate()===date" (click)="chooseDate(date)">{{date+'T00:00:00'|date:'EEE d MMM'}}</button>}@empty{<p>No hay fechas libres para esta modalidad.</p>}</div>}
-    @if(bookingStep()===3){<h3>3. Selecciona un horario libre</h3><div class="option-grid times">@for(time of bookingTimes();track time){<button type="button" [class.chosen]="visitTime()===time" (click)="visitTime.set(time)">{{time}}</button>}@empty{<p>No hay horarios libres para la fecha elegida.</p>}</div>}
-    @if(bookingStep()===4){<h3>4. Confirma los datos</h3><dl class="summary"><div><dt>Especialista</dt><dd>{{fullName(doctor)}} · {{doctor.specialty}}</dd></div><div><dt>Modalidad</dt><dd>{{visitMode()==='virtual'?'Virtual':'Presencial'}}</dd></div><div><dt>Fecha y hora</dt><dd>{{visitDate()+'T00:00:00'|date:'fullDate'}} · {{visitTime()}}</dd></div><div><dt>Precio de demostración</dt><dd>S/ {{doctor.price}}</dd></div></dl><p class="warning">Al confirmar se guardará en «Mis citas» de esta sesión de demostración. No se notificará a ningún médico real.</p>}
-    @if(bookingStep()===5){<div class="success"><span>✓</span><h3>Reserva de demostración registrada</h3><p>{{fullName(doctor)}} · {{visitMode()==='virtual'?'Virtual':'Presencial'}}</p><p>{{visitDate()+'T00:00:00'|date:'fullDate'}} · {{visitTime()}}</p><strong>La cita aparece en «Mis citas» durante esta sesión.</strong></div>}
-    @if(bookingMessage()){<p class="error-message" role="alert">{{bookingMessage()}}</p>}
-    <footer class="booking-actions">@if(bookingStep()>1&&bookingStep()<5){<button class="secondary" type="button" (click)="previousStep()">Atrás</button>}@if(bookingStep()<4){<button class="primary" type="button" [disabled]="(bookingStep()===1&&!visitMode())||(bookingStep()===2&&!visitDate())||(bookingStep()===3&&!visitTime())" (click)="nextStep()">Continuar</button>}@if(bookingStep()===4){<button class="primary" type="button" [disabled]="bookingBusy()" (click)="confirmBooking()">{{bookingBusy()?'Confirmando…':'Confirmar cita demo'}}</button>}@if(bookingStep()===5){<button class="primary" type="button" (click)="booking.set(null)">Terminar</button>}</footer>
-  </section></div>
-}
