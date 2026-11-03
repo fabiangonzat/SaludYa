@@ -1,0 +1,354 @@
+<!-- Iconos reutilizables -->
+<ng-template #ico let-name let-size="size">
+  <svg class="ico" [attr.width]="size || 18" [attr.height]="size || 18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    @for (d of icons[name]; track $index) { <path [attr.d]="d" /> }
+  </svg>
+</ng-template>
+
+<!-- Campos de formulario reutilizables -->
+<ng-template #campo let-c let-form="form" let-prefix="prefix">
+  @let id = prefix + '-' + c.name;
+  @let err = error(form, c.name);
+  <div class="field" [class.full]="c.full" [class.has-error]="err">
+    <label [for]="id">{{ c.label }}@if (!c.optional) {<span class="req" aria-hidden="true"> *</span>}</label>
+    @switch (c.type) {
+      @case ('select') {
+        <select [id]="id" [formControl]="$any(form.get(c.name))" [attr.aria-invalid]="!!err" [attr.aria-describedby]="err ? id + '-err' : null">
+          @for (o of c.options; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+        </select>
+      }
+      @case ('textarea') {
+        <textarea [id]="id" rows="3" [formControl]="$any(form.get(c.name))" [attr.maxlength]="c.maxlength"
+                  [attr.placeholder]="c.placeholder" [attr.aria-invalid]="!!err"></textarea>
+      }
+      @default {
+        <input [id]="id" [type]="c.type" [formControl]="$any(form.get(c.name))" [attr.placeholder]="c.placeholder"
+               [attr.autocomplete]="c.autocomplete" [attr.maxlength]="c.maxlength" [attr.inputmode]="c.type === 'tel' ? 'numeric' : null"
+               [attr.aria-invalid]="!!err" [attr.aria-describedby]="err ? id + '-err' : null" />
+      }
+    }
+    @if (err) { <p class="msg-error" [id]="id + '-err'" role="alert">{{ err }}</p> }
+  </div>
+</ng-template>
+
+<section class="perfil" aria-labelledby="perfil-titulo">
+  <!-- A. Encabezado -->
+  <header class="head">
+    <div class="head-text">
+      <p class="eyebrow">Mi cuenta</p>
+      <h1 id="perfil-titulo">Mi perfil</h1>
+      <p class="sub">Administra tu información personal y tus preferencias de salud.</p>
+    </div>
+    <div class="head-actions">
+      <span class="chip chip-blue"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'user', size: 14 }" /> Perfil personal</span>
+      <button type="button" class="btn btn-primary" (click)="editarPerfil()" [disabled]="loading() || loadError() || editing()['personal']">
+        <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'edit', size: 16 }" /> Editar perfil
+      </button>
+    </div>
+  </header>
+
+  @if (demo) {
+    <div class="banner" role="note">
+      <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'info', size: 18 }" />
+      <p><strong>Datos de prueba.</strong> Aún no hay un servicio conectado: lo que cambies aquí no se guarda en ningún servidor.</p>
+    </div>
+  }
+
+  @if (toast(); as t) {
+    <div class="toast" [class.toast-ok]="t.tipo === 'ok'" [class.toast-error]="t.tipo === 'error'" [attr.role]="t.tipo === 'ok' ? 'status' : 'alert'" aria-live="polite">
+      <ng-container *ngTemplateOutlet="ico; context: { $implicit: t.tipo === 'ok' ? 'check' : 'alert', size: 18 }" />
+      <span>{{ t.texto }}</span>
+      <button type="button" class="toast-close" (click)="cerrarToast()" aria-label="Cerrar mensaje">
+        <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'x', size: 16 }" />
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="grid" aria-busy="true" aria-label="Cargando tu perfil">
+      <div class="card span-2 skel-card"><div class="skel skel-avatar"></div><div class="skel-lines"><div class="skel"></div><div class="skel w60"></div><div class="skel w40"></div></div></div>
+      <div class="card span-2 skel-card"><div class="skel-lines"><div class="skel"></div><div class="skel"></div><div class="skel w60"></div></div></div>
+      <div class="card skel-card"><div class="skel-lines"><div class="skel"></div><div class="skel w60"></div></div></div>
+      <div class="card skel-card"><div class="skel-lines"><div class="skel"></div><div class="skel w60"></div></div></div>
+    </div>
+  } @else if (loadError()) {
+    <div class="card state-card" role="alert">
+      <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'alert', size: 28 }" />
+      <h2>No pudimos cargar tu perfil</h2>
+      <p>Revisa tu conexión e inténtalo nuevamente.</p>
+      <button type="button" class="btn btn-primary" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (perfil(); as p) {
+    <div class="grid">
+      <!-- B. Identidad -->
+      <article class="card span-2 identity" aria-label="Datos del paciente">
+        <div class="avatar-wrap">
+          <div class="avatar" [class.busy]="subiendoFoto()">
+            @if (fotoPreview() || p.fotoUrl; as src) {
+              <img [src]="src" alt="Foto de perfil de {{ nombreCompleto() }}" />
+            } @else {
+              <span aria-hidden="true">{{ iniciales() }}</span>
+            }
+            @if (subiendoFoto()) { <span class="spinner" role="status" aria-label="Subiendo foto"></span> }
+          </div>
+          <input #file id="foto-input" type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onFoto($event)" />
+          <button type="button" class="btn btn-ghost btn-sm" (click)="file.click()" [disabled]="subiendoFoto()">
+            <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'camera', size: 15 }" />
+            {{ p.fotoUrl ? 'Cambiar foto' : 'Subir foto' }}
+          </button>
+          <p class="hint">JPG, PNG o WebP · máx. 2 MB</p>
+        </div>
+
+        <div class="identity-body">
+          <div class="identity-top">
+            <h2>{{ nombreCompleto() }}</h2>
+            <span class="chip" [class.chip-green]="p.estadoCuenta === 'activa'" [class.chip-gray]="p.estadoCuenta !== 'activa'">
+              <span class="dot"></span> {{ p.estadoCuenta === 'activa' ? 'Activa' : 'Inactiva' }}
+            </span>
+          </div>
+          <dl class="facts">
+            <div><dt><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'mail', size: 15 }" /> Correo electrónico</dt><dd>{{ p.email }}</dd></div>
+            <div><dt><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'phone', size: 15 }" /> Teléfono</dt><dd>{{ p.telefono }}</dd></div>
+            <div><dt><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'id', size: 15 }" /> Documento</dt><dd>{{ documentoTexto(p) }}</dd></div>
+            <div><dt><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'calendar', size: 15 }" /> Fecha de nacimiento</dt><dd>{{ fechaLarga(p.fechaNacimiento) }}</dd></div>
+            <div><dt><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'user', size: 15 }" /> Edad</dt><dd>{{ edad() !== null ? edad() + ' años' : '—' }}</dd></div>
+            <div><dt><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'user', size: 15 }" /> Género</dt><dd>{{ generoTexto(p.genero) }}</dd></div>
+            <div><dt><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'shield', size: 15 }" /> Estado de la cuenta</dt><dd>{{ p.estadoCuenta === 'activa' ? 'Activa' : 'Inactiva' }}</dd></div>
+            <div><dt><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'calendar', size: 15 }" /> Miembro desde</dt><dd>{{ fechaLarga(p.fechaRegistro) }}</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <!-- C. Información personal -->
+      <article class="card span-2" id="perfil-personal" aria-labelledby="t-personal">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'user', size: 18 }" /></span>
+            <div><h2 id="t-personal">Información personal</h2><p>Mantén tus datos al día para agendar tus citas sin inconvenientes.</p></div>
+          </div>
+          @if (!editing()['personal']) {
+            <button type="button" class="btn btn-ghost btn-sm" (click)="editar('personal')">
+              <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'edit', size: 15 }" /> Editar
+            </button>
+          }
+        </header>
+        <form [formGroup]="personalForm" (ngSubmit)="guardar('personal')" novalidate>
+          <div class="form-grid">
+            @for (c of camposPersonales; track c.name) {
+              <ng-container *ngTemplateOutlet="campo; context: { $implicit: c, form: personalForm, prefix: 'p' }" />
+            }
+          </div>
+          @if (editing()['personal']) {
+            <div class="actions">
+              <button type="button" class="btn btn-ghost" (click)="cancelar('personal')" [disabled]="saving() === 'personal'">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="saving() === 'personal'">
+                @if (saving() === 'personal') { <span class="spinner sm"></span> Guardando… } @else { Guardar cambios }
+              </button>
+            </div>
+          }
+        </form>
+      </article>
+
+      <!-- D. Contacto de emergencia -->
+      <article class="card" aria-labelledby="t-emergencia">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'contact', size: 18 }" /></span>
+            <div><h2 id="t-emergencia">Contacto de emergencia</h2><p>A quién avisar si lo necesitas.</p></div>
+          </div>
+          @if (!editing()['emergencia']) {
+            <button type="button" class="btn btn-ghost btn-sm" (click)="editar('emergencia')">
+              <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'edit', size: 15 }" /> Editar
+            </button>
+          }
+        </header>
+        <form [formGroup]="emergenciaForm" (ngSubmit)="guardar('emergencia')" novalidate>
+          <div class="form-grid">
+            @for (c of camposEmergencia; track c.name) {
+              <ng-container *ngTemplateOutlet="campo; context: { $implicit: c, form: emergenciaForm, prefix: 'e' }" />
+            }
+          </div>
+          @if (editing()['emergencia']) {
+            <div class="actions">
+              <button type="button" class="btn btn-ghost" (click)="cancelar('emergencia')" [disabled]="saving() === 'emergencia'">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="saving() === 'emergencia'">
+                @if (saving() === 'emergencia') { <span class="spinner sm"></span> Guardando… } @else { Guardar cambios }
+              </button>
+            </div>
+          }
+        </form>
+      </article>
+
+      <!-- E. Preferencias de salud -->
+      <article class="card" aria-labelledby="t-salud">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'health', size: 18 }" /></span>
+            <div><h2 id="t-salud">Preferencias de salud</h2><p>Opcional. Puedes actualizarlo cuando quieras.</p></div>
+          </div>
+          @if (!editing()['salud']) {
+            <button type="button" class="btn btn-ghost btn-sm" (click)="editar('salud')">
+              <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'edit', size: 15 }" /> Editar
+            </button>
+          }
+        </header>
+        <form [formGroup]="saludForm" (ngSubmit)="guardar('salud')" novalidate>
+          <div class="form-grid">
+            @for (c of camposSalud; track c.name) {
+              <ng-container *ngTemplateOutlet="campo; context: { $implicit: c, form: saludForm, prefix: 's' }" />
+            }
+          </div>
+          @if (editing()['salud']) {
+            <div class="actions">
+              <button type="button" class="btn btn-ghost" (click)="cancelar('salud')" [disabled]="saving() === 'salud'">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="saving() === 'salud'">
+                @if (saving() === 'salud') { <span class="spinner sm"></span> Guardando… } @else { Guardar cambios }
+              </button>
+            </div>
+          }
+        </form>
+      </article>
+
+      <!-- F. Seguridad -->
+      <article class="card" aria-labelledby="t-seguridad">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'lock', size: 18 }" /></span>
+            <div><h2 id="t-seguridad">Seguridad de la cuenta</h2><p>Protege el acceso a tu información médica.</p></div>
+          </div>
+        </header>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="cambiarPassword()" novalidate class="pw-form">
+          <h3>Cambiar contraseña</h3>
+          @for (f of [
+            { n: 'actual', l: 'Contraseña actual', a: 'current-password' },
+            { n: 'nueva', l: 'Nueva contraseña', a: 'new-password' },
+            { n: 'confirmar', l: 'Confirmar nueva contraseña', a: 'new-password' }
+          ]; track f.n) {
+            @let e = errorPassword($any(f.n));
+            <div class="field" [class.has-error]="e">
+              <label [for]="'pw-' + f.n">{{ f.l }} <span class="req" aria-hidden="true">*</span></label>
+              <div class="pw-wrap">
+                <input [id]="'pw-' + f.n" [type]="showPassword() ? 'text' : 'password'" [formControlName]="f.n" [attr.autocomplete]="f.a"
+                       [attr.aria-invalid]="!!e" />
+                <button type="button" class="pw-toggle" (click)="showPassword.set(!showPassword())"
+                        [attr.aria-label]="showPassword() ? 'Ocultar contraseñas' : 'Mostrar contraseñas'" [attr.aria-pressed]="showPassword()">
+                  <ng-container *ngTemplateOutlet="ico; context: { $implicit: showPassword() ? 'eye-off' : 'eye', size: 18 }" />
+                </button>
+              </div>
+              @if (e) { <p class="msg-error" role="alert">{{ e }}</p> }
+            </div>
+            @if (f.n === 'nueva') {
+              <div class="strength" aria-live="polite">
+                <div class="bars" [attr.data-level]="fuerza().puntos">
+                  @for (i of [1, 2, 3, 4]; track i) { <span [class.on]="i <= fuerza().puntos"></span> }
+                </div>
+                <p class="strength-label">Seguridad: <strong>{{ fuerza().etiqueta || '—' }}</strong></p>
+                <ul class="reqs">
+                  @for (r of requisitos(); track r.texto) {
+                    <li [class.ok]="r.ok">
+                      <ng-container *ngTemplateOutlet="ico; context: { $implicit: r.ok ? 'check' : 'x', size: 13 }" /> {{ r.texto }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          }
+          <button type="submit" class="btn btn-primary" [disabled]="saving() === 'password'">
+            @if (saving() === 'password') { <span class="spinner sm"></span> Actualizando… } @else { Actualizar contraseña }
+          </button>
+        </form>
+
+        <hr class="sep" />
+
+        <ul class="rows">
+          <li>
+            <span class="row-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'mail', size: 18 }" /></span>
+            <div class="row-text"><strong>Correo electrónico</strong><span>{{ p.email }}</span></div>
+            @if (p.emailVerificado) {
+              <span class="chip chip-green"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'check', size: 13 }" /> Verificado</span>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-sm" (click)="verificar('email')" [disabled]="verificando() !== null">
+                @if (verificando() === 'email') { <span class="spinner sm"></span> } Verificar
+              </button>
+            }
+          </li>
+          <li>
+            <span class="row-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'phone', size: 18 }" /></span>
+            <div class="row-text"><strong>Número de celular</strong><span>{{ p.telefono }}</span></div>
+            @if (p.telefonoVerificado) {
+              <span class="chip chip-green"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'check', size: 13 }" /> Verificado</span>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-sm" (click)="verificar('telefono')" [disabled]="verificando() !== null">
+                @if (verificando() === 'telefono') { <span class="spinner sm"></span> } Verificar
+              </button>
+            }
+          </li>
+          <li>
+            <span class="row-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'activity', size: 18 }" /></span>
+            <div class="row-text"><strong>Actividad reciente</strong><span>Revisa los últimos movimientos de tu cuenta.</span></div>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="abrirActividad()">Ver actividad</button>
+          </li>
+        </ul>
+      </article>
+
+      <!-- G. Notificaciones -->
+      <article class="card" aria-labelledby="t-notif">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'bell', size: 18 }" /></span>
+            <div><h2 id="t-notif">Notificaciones</h2><p>Elige qué avisos quieres recibir.</p></div>
+          </div>
+        </header>
+        <ul class="rows switches">
+          @for (n of [
+            { k: 'recordatoriosCitas', t: 'Recordatorios de citas', d: 'Aviso antes de tu consulta.' },
+            { k: 'confirmacionesCitas', t: 'Confirmaciones de citas', d: 'Cuando una cita se confirme o cambie.' },
+            { k: 'mensajesMedicos', t: 'Mensajes médicos', d: 'Cuando un médico te escriba.' },
+            { k: 'actualizacionesPlataforma', t: 'Actualizaciones de la plataforma', d: 'Novedades y mejoras de SaludYA.' }
+          ]; track n.k) {
+            <li>
+              <div class="row-text"><strong [id]="'n-' + n.k">{{ n.t }}</strong><span>{{ n.d }}</span></div>
+              <button type="button" class="switch" role="switch" [attr.aria-checked]="$any(p.notificaciones)[n.k]"
+                      [attr.aria-labelledby]="'n-' + n.k" (click)="cambiarNotificacion($any(n.k))">
+                <span class="knob"></span>
+              </button>
+            </li>
+          }
+        </ul>
+      </article>
+    </div>
+  }
+</section>
+
+<!-- Actividad reciente -->
+@if (actividadAbierta()) {
+  <div class="overlay" (click)="cerrarActividad()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="t-act" (click)="$event.stopPropagation()">
+      <header class="card-head">
+        <div class="card-title">
+          <span class="card-ico"><ng-container *ngTemplateOutlet="ico; context: { $implicit: 'activity', size: 18 }" /></span>
+          <div><h2 id="t-act">Actividad reciente</h2><p>Movimientos de tu cuenta.</p></div>
+        </div>
+        <button type="button" class="icon-btn" (click)="cerrarActividad()" aria-label="Cerrar">
+          <ng-container *ngTemplateOutlet="ico; context: { $implicit: 'x', size: 18 }" />
+        </button>
+      </header>
+      @if (actividadLoading()) {
+        <div class="skel-lines"><div class="skel"></div><div class="skel w60"></div></div>
+      } @else if (actividadError()) {
+        <p class="msg-error" role="alert">No pudimos cargar la actividad. Inténtalo nuevamente.</p>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="abrirActividad()">Reintentar</button>
+      } @else if (actividad().length === 0) {
+        <p class="empty">Aún no hay actividad registrada.</p>
+      } @else {
+        <ul class="timeline">
+          @for (a of actividad(); track a.fecha) {
+            <li><strong>{{ a.descripcion }}</strong><span>{{ fechaHora(a.fecha) }}@if (a.dispositivo) { · {{ a.dispositivo }} }</span></li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+}
