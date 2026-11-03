@@ -15,7 +15,7 @@ function suffix(value: string): string {
 export class MedicalHistoryService {
   private readonly auth = inject(AuthService);
   private readonly api = inject(MEDICAL_HISTORY_API, { optional: true });
-  private storageKey(): string { return `${HISTORY_STORAGE_PREFIX}${suffix(this.auth.token ?? 'sin-sesion')}`; }
+  private storageKey(): string { return `${HISTORY_STORAGE_PREFIX}${suffix(this.auth.token() || 'sin-sesion')}`; }
   readonly connected = !!this.api;
   readonly records = signal<MedicalHistoryRecord[]>([]);
   readonly patientAntecedents = signal<PatientDeclaredAntecedent[]>(this.readPatientAntecedents());

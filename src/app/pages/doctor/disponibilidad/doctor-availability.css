@@ -1,0 +1,89 @@
+:host { display: block; }
+.avail-page { padding: 32px; max-width: 1100px; margin: 0 auto; }
+
+.avail-header { margin-bottom: 28px; }
+.avail-header__title { margin: 0; font-size: 26px; font-weight: 800; color: #0b1e3d; }
+.avail-header__sub { margin: 6px 0 0; font-size: 15px; color: #4a5b78; }
+
+.avail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+/* ── Panel ──────────────────────────────────────────────── */
+.panel { background: #fff; border: 1px solid #e3eefc; border-radius: 20px; padding: 24px; box-shadow: 0 2px 16px rgba(8,80,200,.07); }
+.panel__title { margin: 0 0 20px; font-size: 16px; font-weight: 700; color: #0b2a5b; }
+
+/* ── Form fields ────────────────────────────────────────── */
+.add-form { display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 13px; font-weight: 700; color: #2b3f63; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.select-input, .time-input, .number-input {
+  padding: 10px 14px;
+  border: 1.5px solid #d4e4fa; border-radius: 12px;
+  background: #f7faff; color: #0b2a5b;
+  font: inherit; font-size: 14px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.select-input:focus, .time-input:focus, .number-input:focus {
+  outline: none; border-color: #087bfa;
+  box-shadow: 0 0 0 3px rgba(8,123,250,.18);
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 20px; border-radius: 12px;
+  font: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer; border: 0; transition: all .18s ease;
+}
+.btn--primary { background: #087bfa; color: #fff; box-shadow: 0 4px 14px rgba(8,123,250,.3); }
+.btn--primary:hover { background: #0a6ae0; transform: translateY(-1px); }
+.btn--secondary { background: #f0f7ff; color: #0a62d0; border: 1.5px solid #c5ddf9; }
+.btn--secondary:hover { background: #e0efff; }
+.btn--teal { background: #0d9488; color: #fff; box-shadow: 0 4px 14px rgba(13,148,136,.3); }
+.btn--teal:hover { background: #0f766e; }
+.btn:disabled { opacity: .65; cursor: not-allowed; transform: none !important; }
+
+/* ── Entries list ───────────────────────────────────────── */
+.entry-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.entry-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px; border-radius: 14px;
+  background: #f8fbff; border: 1px solid #e8f0fb;
+}
+.entry-day-badge {
+  width: 44px; height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; font-size: 13px; font-weight: 800;
+  text-transform: uppercase;
+}
+.badge-presencial { background: #fef3c7; color: #92400e; }
+.badge-virtual { background: #e0e7ff; color: #3730a3; }
+
+.entry-info { flex: 1; min-width: 0; }
+.entry-day { margin: 0; font-size: 14px; font-weight: 700; color: #0b2a5b; }
+.entry-time { margin: 2px 0; font-size: 13px; color: #4a5b78; }
+.entry-slots { margin: 0; font-size: 12px; color: #6b7b96; }
+
+.remove-btn {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 10px;
+  background: #fee2e2; color: #dc2626; cursor: pointer;
+  transition: all .15s;
+}
+.remove-btn:hover { background: #dc2626; color: #fff; }
+
+/* ── Misc ───────────────────────────────────────────────── */
+.empty-state { padding: 32px 0; text-align: center; color: #4a5b78; font-size: 14px; }
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.hint { margin: 14px 0 0; font-size: 13px; color: #6b7b96; line-height: 1.6; }
+
+.alert { padding: 10px 14px; border-radius: 12px; font-size: 14px; font-weight: 500; margin-top: 8px; }
+.alert--error { background: #fdeaea; color: #9b1c1c; border: 1px solid #f3c1c1; }
+.alert--success { background: #e3f7ea; color: #0a5c2e; border: 1px solid #b7e4c7; }
+
+@media (max-width: 800px) {
+  .avail-grid { grid-template-columns: 1fr; }
+  .avail-page { padding: 20px 16px; }
+}

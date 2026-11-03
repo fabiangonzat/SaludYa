@@ -17,7 +17,7 @@ function validState(value: unknown): value is WellnessState {
 @Injectable({ providedIn: 'root' })
 export class WellnessService {
   private readonly auth = inject(AuthService);
-  private storageKey(): string { return `${WELLNESS_STORAGE_PREFIX}${sessionSuffix(this.auth.token ?? 'sin-sesion')}`; }
+  private storageKey(): string { return `${WELLNESS_STORAGE_PREFIX}${sessionSuffix(this.auth.token() || 'sin-sesion')}`; }
   readonly state = signal<WellnessState>(this.restore());
   readonly latestMeasurement = computed(() => [...this.state().measurements].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0] ?? null);
   readonly lastUpdated = computed(() => {

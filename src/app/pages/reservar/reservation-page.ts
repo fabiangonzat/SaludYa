@@ -32,7 +32,7 @@ export class ReservationPage {
   readonly slots = computed(() => {
     const doctor = this.selectedDoctor();
     if (!doctor) return [];
-    return doctor.slots.filter((slot) => !slot.taken && (!this.modality() || slot.modality === this.modality()) && this.isFuture(slot.date, slot.time) && !this.appointments.hasSlot(doctor.id, slot.date, slot.time));
+    return doctor.slots.filter((slot) => !slot.taken && (!this.modality() || slot.modality === this.modality()) && this.isFuture(slot.date, slot.time));
   });
   readonly dates = computed(() => [...new Set(this.slots().map((slot) => slot.date))].sort());
   readonly times = computed(() => this.slots().filter((slot) => slot.date === this.date()).map((slot) => slot.time));
@@ -46,7 +46,10 @@ export class ReservationPage {
       if (doctorId) {
         this.selectedDoctorId.set(doctorId);
         this.step.set(2);
-        this.doctorsService.getById(doctorId).subscribe({next: (doctor) => this.selectedSpecialty.set(doctor.specialty), error: () => this.message.set('Ese perfil ya no está en el catálogo de demostración.')});
+        void this.doctorsService.getById(doctorId).then((doctor) => {
+          if (doctor) this.selectedSpecialty.set(doctor.specialty);
+          else this.message.set('Ese perfil ya no está disponible.');
+        });
       }
     });
   }
@@ -63,19 +66,29 @@ export class ReservationPage {
     if (!valid) { this.message.set('Completa los datos requeridos para continuar.'); return; }
     if (this.step() < 5) this.step.update((value) => value + 1);
   }
-  confirm(): void {
+  async confirm(): Promise<void> {
     const doctor = this.selectedDoctor();
     if (!doctor || this.busy() || !this.reason().trim()) return;
     this.busy.set(true); this.message.set('');
-    this.doctorsService.occupySlot(doctor.id, this.date(), this.time()).subscribe({
-      next: () => {
-        const appointment = this.appointments.create({ doctorId: doctor.id, doctorName: doctorFullName(doctor), doctorInitials: doctor.initials, doctorColor: doctor.color, specialty: doctor.specialty, date: this.date(), time: this.time(), modality: this.modality() as Modality, price: doctor.price, reason: this.reason().trim(), symptoms: this.symptoms().trim(), notes: this.notes().trim(), demo: true });
-        this.busy.set(false);
-        if (!appointment) { this.message.set('No se pudo guardar: el horario pudo ocuparse o la fecha ya pasó. Vuelve a elegir un horario.'); this.step.set(3); this.date.set(''); this.time.set(''); this.doctorsService.load(); return; }
-        this.createdId.set(appointment.id); this.step.set(6);
-      },
-      error: () => { this.busy.set(false); this.message.set('Ese horario ya no está disponible. Elige otro.'); this.step.set(3); this.date.set(''); this.time.set(''); this.doctorsService.load(); },
+    const result = await this.appointments.create({
+      doctorId: doctor.id,
+      specialtyId: doctor.specialty_id,
+      date: this.date(),
+      time: this.time(),
+      modality: this.modality() as Modality,
+      price: doctor.price,
+      reason: this.reason().trim(),
+      symptoms: this.symptoms().trim(),
     });
+    this.busy.set(false);
+    if (result.error || !result.data) {
+      this.message.set(result.error ?? 'Ese horario ya no está disponible. Elige otro.');
+      this.step.set(3); this.date.set(''); this.time.set('');
+      await this.doctorsService.load();
+      return;
+    }
+    this.createdId.set(result.data.id);
+    this.step.set(6);
   }
   private isFuture(date: string, time: string): boolean {
     const [year, month, day] = date.split('-').map(Number); const [hour, minute] = time.split(':').map(Number);

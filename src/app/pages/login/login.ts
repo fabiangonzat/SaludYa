@@ -12,13 +12,13 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './login.css',
 })
 export class LoginComponent {
-  private fb = inject(FormBuilder);
-  private auth = inject(AuthService);
-  private router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   form = this.fb.nonNullable.group({
-    email: ['', Validators.required],
-    password: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
     remember: [false],
   });
 
@@ -33,15 +33,29 @@ export class LoginComponent {
     this.showPassword.update((v) => !v);
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     this.errorMessage.set(null);
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+
+    this.loading.set(true);
+    const { email, password } = this.form.getRawValue();
+    const { error } = await this.auth.signIn(email.trim(), password);
+
+    if (error) {
+      this.errorMessage.set(error);
+      this.loading.set(false);
       return;
     }
-    const { email, remember } = this.form.getRawValue();
-    this.loading.set(true);
-    this.auth.loginDemo(email.trim(), remember);
-    this.router.navigateByUrl('/inicio').finally(() => this.loading.set(false));
+
+    // Redirigir según rol
+    const role = this.auth.userRole();
+    if (role === 'doctor') {
+      this.router.navigateByUrl('/doctor');
+    } else if (role === 'admin') {
+      this.router.navigateByUrl('/admin');
+    } else {
+      this.router.navigateByUrl('/inicio');
+    }
+    this.loading.set(false);
   }
 }

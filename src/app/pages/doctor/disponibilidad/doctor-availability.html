@@ -1,0 +1,97 @@
+<div class="avail-page">
+  <header class="avail-header">
+    <h1 class="avail-header__title">Configurar disponibilidad</h1>
+    <p class="avail-header__sub">Define los horarios en que los pacientes pueden reservar citas contigo.</p>
+  </header>
+
+  <div class="avail-grid">
+    <!-- Formulario para agregar -->
+    <section class="panel">
+      <h2 class="panel__title">Agregar horario</h2>
+
+      <form [formGroup]="addForm" (ngSubmit)="addEntry()" novalidate class="add-form">
+        <div class="field">
+          <label for="avail-day">Día de la semana</label>
+          <select id="avail-day" formControlName="dayOfWeek" class="select-input">
+            <option *ngFor="let d of days; let i = index" [value]="i">{{ d }}</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="avail-start">Hora inicio</label>
+            <input id="avail-start" type="time" formControlName="startTime" class="time-input">
+          </div>
+          <div class="field">
+            <label for="avail-end">Hora fin</label>
+            <input id="avail-end" type="time" formControlName="endTime" class="time-input">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="avail-dur">Duración del turno (min)</label>
+            <input id="avail-dur" type="number" min="10" max="120" step="5" formControlName="slotDurationMinutes" class="number-input">
+          </div>
+          <div class="field">
+            <label for="avail-mod">Modalidad</label>
+            <select id="avail-mod" formControlName="modality" class="select-input">
+              <option value="presencial">Presencial</option>
+              <option value="virtual">Virtual</option>
+            </select>
+          </div>
+        </div>
+
+        <div *ngIf="errorMsg()" class="alert alert--error">{{ errorMsg() }}</div>
+
+        <button type="submit" class="btn btn--primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar horario
+        </button>
+      </form>
+    </section>
+
+    <!-- Vista previa -->
+    <section class="panel">
+      <h2 class="panel__title">Horarios configurados</h2>
+
+      <div *ngIf="entries().length === 0" class="empty-state">
+        <p>Aún no has configurado ningún horario.</p>
+      </div>
+
+      <ul *ngIf="entries().length > 0" class="entry-list">
+        <li *ngFor="let e of entries(); let i = index" class="entry-item">
+          <div class="entry-day-badge" [ngClass]="e.modality === 'virtual' ? 'badge-virtual' : 'badge-presencial'">
+            {{ dayName(e.dayOfWeek).slice(0, 3) }}
+          </div>
+          <div class="entry-info">
+            <p class="entry-day">{{ dayName(e.dayOfWeek) }}</p>
+            <p class="entry-time">{{ e.startTime }} – {{ e.endTime }} · {{ e.slotDurationMinutes }} min</p>
+            <p class="entry-slots">≈ {{ slotCount(e) }} turnos · {{ e.modality === 'virtual' ? 'Virtual' : 'Presencial' }}</p>
+          </div>
+          <button class="remove-btn" (click)="removeEntry(i)" title="Eliminar horario" aria-label="Eliminar horario">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </li>
+      </ul>
+
+      <div *ngIf="successMsg()" class="alert alert--success">{{ successMsg() }}</div>
+
+      <div class="action-row">
+        <button class="btn btn--secondary" (click)="save()" [disabled]="saving()">
+          <span *ngIf="!saving()">Guardar disponibilidad</span>
+          <span *ngIf="saving()">Guardando...</span>
+        </button>
+        <button class="btn btn--teal" (click)="generateSlots()" [disabled]="generating() || entries().length === 0">
+          <span *ngIf="!generating()">Generar slots (60 días)</span>
+          <span *ngIf="generating()">Generando...</span>
+        </button>
+      </div>
+
+      <p class="hint">
+        Al guardar, los pacientes podrán ver tus horarios disponibles.<br>
+        Usa <strong>Generar slots</strong> para crear las citas individuales de los próximos 60 días.
+      </p>
+    </section>
+  </div>
+</div>

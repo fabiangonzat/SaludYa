@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { WellnessService } from '../bienestar/wellness.service';
 import { MetricType, WellnessMeasurement } from '../bienestar/wellness.models';
 import { AppointmentsService } from '../../services/appointments.service';
-import { MedicalAppointment } from '../../services/appointments.models';
+import { AppointmentWithProfiles } from '../../services/appointments.service';
 
 @Component({
   selector: 'app-home',
@@ -32,7 +32,7 @@ export class HomeComponent {
   readonly habitCount = computed(() => this.wellness.state().habits.length);
   readonly wellnessUpdated = computed(() => this.wellness.lastUpdated());
   readonly upcomingAppointment = computed(() => this.appointments.appointments().filter((a) => ['pendiente','confirmada','reprogramada'].includes(a.status) && a.date >= new Date().toISOString().slice(0,10)).sort((a,b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))[0] ?? null);
-  appointmentStatus(appointment: MedicalAppointment): string { return appointment.status === 'pendiente' ? 'Pendiente de confirmación · demo' : appointment.status === 'reprogramada' ? 'Reprogramada · demo' : 'Confirmada · demo'; }
+  appointmentStatus(appointment: AppointmentWithProfiles): string { return appointment.status === 'pendiente' ? 'Pendiente de confirmación' : appointment.status === 'reprogramada' ? 'Reprogramada' : 'Confirmada'; }
   readonly metrics = [
     { title: 'Próximas citas', value: '—', hint: 'Conecta tus citas para verlas aquí', icon: 'calendar' },
     { title: 'Consultas realizadas', value: '—', hint: 'Tu historial de atención', icon: 'check' },

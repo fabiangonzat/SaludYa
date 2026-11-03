@@ -1,106 +1,180 @@
-import { Injectable, InjectionToken, inject, signal } from '@angular/core';
-import { Observable, defer, delay, of, throwError } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { createDemoDoctors } from './doctors.catalog';
-import { Doctor } from './doctors.models';
+import { Injectable, signal } from '@angular/core';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../../core/supabase/supabase.client';
+import { DoctorRow, SpecialtyRow } from '../../core/supabase/supabase.types';
+import { Doctor, TimeSlot } from './doctors.models';
 
-export interface DoctorsApi {
-  list(): Observable<Doctor[]>;
-  getById(id: string): Observable<Doctor>;
-  occupySlot(doctorId: string, date: string, time: string): Observable<Doctor>;
-  releaseSlot(doctorId: string, date: string, time: string): Observable<Doctor>;
+export interface DoctorWithProfile extends Doctor {
+  profile: { full_name: string; email: string; avatar_url: string | null; city: string | null; gender: string | null } | null;
+  profile_id: string;
+  specialty_id: number | null;
+  is_active: boolean;
 }
 
-export const DOCTORS_API = new InjectionToken<DoctorsApi>('DOCTORS_API');
-
-function cloneDoctors(source: Doctor[]): Doctor[] {
-  return source.map((doctor) => ({
-    ...doctor,
-    education: [...doctor.education],
-    languages: [...doctor.languages],
-    conditions: [...doctor.conditions],
-    modalities: [...doctor.modalities],
-    reviews: doctor.reviews.map((review) => ({ ...review })),
-    slots: doctor.slots.map((slot) => ({ ...slot })),
-  }));
-}
-
-function createDemoApi(): DoctorsApi {
-  let catalog = cloneDoctors(createDemoDoctors());
-  const lag = <T>(fn: () => T) => defer(() => of(fn())).pipe(delay(380));
-  return {
-    list: () => lag(() => cloneDoctors(catalog)),
-    getById: (id) =>
-      lag(() => {
-        const doctor = catalog.find((item) => item.id === id);
-        if (!doctor) throw new Error('not-found');
-        return cloneDoctors([doctor])[0];
-      }),
-    occupySlot: (doctorId, date, time) =>
-      lag(() => {
-        const doctor = catalog.find((item) => item.id === doctorId);
-        if (!doctor) throw new Error('not-found');
-        const slot = doctor.slots.find((item) => item.date === date && item.time === time && !item.taken);
-        if (!slot) throw new Error('slot-taken');
-        slot.taken = true;
-        catalog = catalog.map((item) => (item.id === doctorId ? { ...doctor, slots: doctor.slots.map((s) => ({ ...s })) } : item));
-        return cloneDoctors([doctor])[0];
-      }),
-    releaseSlot: (doctorId, date, time) =>
-      lag(() => {
-        const doctor = catalog.find((item) => item.id === doctorId);
-        if (!doctor) throw new Error('not-found');
-        const slot = doctor.slots.find((item) => item.date === date && item.time === time);
-        if (slot) slot.taken = false;
-        catalog = catalog.map((item) => (item.id === doctorId ? { ...doctor, slots: doctor.slots.map((s) => ({ ...s })) } : item));
-        return cloneDoctors([doctor])[0];
-      }),
-  };
-}
+type DoctorDatabaseResult = DoctorRow & {
+  profile: DoctorWithProfile['profile'];
+  specialty: SpecialtyRow | null;
+  languages: { language: string }[];
+  slots: { date: string; time: string; modality: 'presencial' | 'virtual'; is_taken: boolean }[];
+};
 
 @Injectable({ providedIn: 'root' })
 export class DoctorsService {
-  private readonly injected = inject(DOCTORS_API, { optional: true });
-  private readonly api: DoctorsApi = this.injected ?? createDemoApi();
-  readonly demo = !this.injected;
-  readonly doctors = signal<Doctor[]>([]);
+  private readonly supabase: SupabaseClient = getSupabaseClient();
+
+  readonly doctors = signal<DoctorWithProfile[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  load(): void {
+  async load(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
-    this.api.list().subscribe({
-      next: (doctors) => {
-        this.doctors.set(doctors);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('No pudimos cargar el directorio médico. Inténtalo nuevamente.');
-        this.loading.set(false);
-      },
-    });
+
+    const { data, error } = await this.supabase
+      .from('doctors')
+      .select(`
+        *,
+        profile:profiles(full_name, email, avatar_url, city, gender),
+        specialty:specialties(*),
+        languages:doctor_languages(language),
+        slots:doctor_slots(date, time, modality, is_taken)
+      `)
+      .eq('is_active', true)
+      .order('rating', { ascending: false });
+
+    if (error) {
+      this.error.set('No se pudo cargar el directorio médico.');
+    } else {
+      this.doctors.set((data ?? []).map((doctor) => this.toDoctor(doctor as DoctorDatabaseResult)));
+    }
+    this.loading.set(false);
   }
 
-  getById(id: string): Observable<Doctor> {
-    return this.api.getById(id);
+  async getById(id: string): Promise<DoctorWithProfile | null> {
+    const { data } = await this.supabase
+      .from('doctors')
+      .select(`
+        *,
+        profile:profiles(full_name, email, avatar_url, city, gender),
+        specialty:specialties(*),
+        languages:doctor_languages(language),
+        slots:doctor_slots(date, time, modality, is_taken)
+      `)
+      .eq('id', id)
+      .single();
+    return data ? this.toDoctor(data as DoctorDatabaseResult) : null;
   }
 
-  occupySlot(doctorId: string, date: string, time: string): Observable<Doctor> {
-    return this.api.occupySlot(doctorId, date, time).pipe(
-      tap((updated) => {
-        this.doctors.update((list) => list.map((item) => (item.id === updated.id ? updated : item)));
-      }),
-    );
+  async getByProfileId(profileId: string): Promise<DoctorWithProfile | null> {
+    const { data } = await this.supabase
+      .from('doctors')
+      .select(`
+        *,
+        profile:profiles(full_name, email, avatar_url, city, gender),
+        specialty:specialties(*),
+        languages:doctor_languages(language),
+        slots:doctor_slots(date, time, modality, is_taken)
+      `)
+      .eq('profile_id', profileId)
+      .single();
+    return data ? this.toDoctor(data as DoctorDatabaseResult) : null;
   }
 
-  releaseSlot(doctorId: string, date: string, time: string): Observable<Doctor> {
-    return this.api.releaseSlot(doctorId, date, time).pipe(
-      tap((updated) => this.doctors.update((list) => list.map((item) => (item.id === updated.id ? updated : item)))),
-    );
-  }
-}
+  async createDoctorProfile(
+    profileId: string,
+    data: {
+      specialtyId: number | null;
+      license: string;
+      bio: string;
+      price: number;
+      yearsExperience: number;
+      location: string;
+      university: string;
+      languages: string[];
+    }
+  ): Promise<{ id: string | null; error: string | null }> {
+    const { data: doctor, error } = await this.supabase
+      .from('doctors')
+      .insert({
+        profile_id: profileId,
+        specialty_id: data.specialtyId,
+        license: data.license,
+        bio: data.bio,
+        price: data.price,
+        years_experience: data.yearsExperience,
+        location: data.location,
+        university: data.university,
+        is_active: true,
+      })
+      .select('id')
+      .single();
 
-export function doctorsApiNotFound(): Observable<never> {
-  return throwError(() => new Error('not-found'));
+    if (error || !doctor) return { id: null, error: error?.message ?? 'Error creando perfil.' };
+
+    // Insertar idiomas
+    if (data.languages.length > 0) {
+      await this.supabase.from('doctor_languages').insert(
+        data.languages.map((lang) => ({ doctor_id: doctor.id, language: lang }))
+      );
+    }
+
+    return { id: doctor.id, error: null };
+  }
+
+  async updateDoctorProfile(
+    doctorId: string,
+    updates: Partial<Omit<DoctorRow, 'id' | 'profile_id' | 'created_at'>>
+  ): Promise<{ error: string | null }> {
+    const { error } = await this.supabase
+      .from('doctors')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', doctorId);
+    return { error: error?.message ?? null };
+  }
+
+  async getSpecialties(): Promise<SpecialtyRow[]> {
+    const { data } = await this.supabase.from('specialties').select('*').order('name');
+    return data ?? [];
+  }
+
+  private toDoctor(row: DoctorDatabaseResult): DoctorWithProfile {
+    const fullName = row.profile?.full_name?.trim() || 'Médico sin nombre';
+    const [firstName = 'Médico', ...lastNameParts] = fullName.split(/\s+/);
+    const slots: TimeSlot[] = (row.slots ?? []).map((slot) => ({
+      date: slot.date,
+      time: slot.time.slice(0, 5),
+      modality: slot.modality,
+      taken: slot.is_taken,
+    }));
+    const modalities = [...new Set(slots.map((slot) => slot.modality))];
+    return {
+      id: row.id,
+      profile_id: row.profile_id,
+      specialty_id: row.specialty_id,
+      is_active: row.is_active,
+      profile: row.profile,
+      demo: true,
+      firstName,
+      lastName: lastNameParts.join(' ') || '',
+      specialty: row.specialty?.name ?? 'Sin especialidad',
+      license: row.license ?? undefined,
+      bio: row.bio ?? '',
+      price: row.price,
+      rating: row.rating,
+      yearsExperience: row.years_experience,
+      reviewCount: row.review_count,
+      location: row.location ?? '',
+      city: row.city ?? row.profile?.city ?? '',
+      gender: (row.gender ?? row.profile?.gender ?? 'femenino') as Doctor['gender'],
+      languages: (row.languages ?? []).map((item) => item.language),
+      modalities: modalities.length ? modalities : ['presencial'],
+      education: row.university ? [row.university] : [],
+      university: row.university ?? '',
+      initials: fullName.split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase(),
+      color: '#087bfa',
+      conditions: [],
+      reviews: [],
+      slots,
+    };
+  }
 }
