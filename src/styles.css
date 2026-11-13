@@ -1,3 +1,18 @@
 @import 'tailwindcss';
 
-body { margin: 0; }
+/* Escala legible y coherente para toda la interfaz, incluidos componentes con
+   tamaños declarados en px. */
+html { font-size: 112.5%; }
+
+body {
+  margin: 0;
+  zoom: 1.1;
+}
+
+.payment-total { color: #0877ef !important; font-size: 19px; }
+.payment-note { border-radius: 10px; background: #f1f7ff; padding: 12px 14px; color: #496783; font-size: 13px; line-height: 1.5; }
+.payment-button { min-width: 210px; }
+
+@media (max-width: 700px) {
+  body { zoom: 1; }
+}

@@ -10,12 +10,12 @@ reserva atómica y Realtime.
 2. Desde esta carpeta ejecuta:
 
    ```powershell
-   npx supabase link --project-ref spefixwemgfbndnofzei
+     npx supabase link --project-ref spefixwemgfbndnofzei
    npx supabase db push
    ```
 
    Como alternativa, abre el **SQL Editor** de Supabase y ejecuta el contenido
-   de `migrations/20261103160000_crm_saludya.sql` una única vez.
+   de `migrations/20261103160000_crm_szaludya.sql` una única vez.
 
 3. En **Authentication > URL Configuration**, agrega las URLs de desarrollo y
    producción de tu aplicación a `Site URL` y `Redirect URLs`.
@@ -45,3 +45,30 @@ no obtiene acceso al contenido clínico del paciente.
 Las funciones `book_appointment`, `reschedule_appointment` y
 `change_appointment_status` bloquean el slot durante la operación para impedir
 reservas dobles incluso si dos pacientes intentan elegir la misma hora.
+
+## Verificación de médicos y aviso al administrador
+
+La migración `20261109090000_doctor_verification.sql` añade el proceso de
+verificación profesional. Un médico adjunta de una a cuatro imágenes de su
+licencia, tarjeta profesional o credencial; estas se almacenan de forma
+privada. No aparece en el directorio hasta que un administrador aprueba la
+solicitud desde `/admin`.
+
+Después de aplicar esa migración, despliega la función de notificación:
+
+```powershell
+npx supabase functions deploy notify-doctor-verification
+```
+
+El correo se envía por Resend. Crea una cuenta en Resend, verifica un dominio o
+una dirección remitente y configura los secretos **sin incluirlos en Angular ni
+en Git**:
+
+```powershell
+npx supabase secrets set RESEND_API_KEY=re_xxxxxxxxx
+npx supabase secrets set NOTIFICATION_FROM="SaludYA <verificaciones@tu-dominio.com>"
+npx supabase secrets set ADMIN_NOTIFICATION_EMAIL=rosalesnacho914@gmail.com
+```
+
+Sin esos tres secretos, la solicitud y los documentos sí se guardan y aparecen
+en el panel administrativo, pero el aviso automático por email no se enviará.

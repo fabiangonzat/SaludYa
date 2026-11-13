@@ -45,8 +45,8 @@
 
 .login__brand-inner { position: relative; max-width: 420px; }
 .login__cross { display: block; margin-bottom: 24px; }
-.login__brand-title { margin: 0; font-size: 44px; font-weight: 800; letter-spacing: -0.02em; }
-.login__brand-text { margin: 16px 0 0; font-size: 18px; line-height: 1.6; color: #e6efff; }
+.login__brand-title { margin: 0; font-size: 48px; font-weight: 800; letter-spacing: -0.02em; }
+.login__brand-text { margin: 16px 0 0; font-size: 19px; line-height: 1.6; color: #e6efff; }
 .login__brand-list { margin: 28px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
 .login__brand-list li { display: flex; align-items: center; gap: 12px; font-weight: 600; }
 .login__brand-list li::before {
@@ -73,7 +73,7 @@
   min-height: 44px; padding: 0 14px;
   border-radius: 12px;
   color: var(--blue-link);
-  font-weight: 600; font-size: 15px;
+  font-weight: 600; font-size: 16px;
   text-decoration: none;
 }
 .login__back:hover { background: var(--sky); }
@@ -89,14 +89,14 @@
   text-align: center;
 }
 .login__logo { display: block; margin: 0 auto 12px; }
-.login__title { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
-.login__subtitle { margin: 10px 0 24px; font-size: 15px; line-height: 1.55; color: var(--text-soft); }
+.login__title { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+.login__subtitle { margin: 10px 0 24px; font-size: 16px; line-height: 1.55; color: var(--text-soft); }
 
 form { text-align: left; }
 
 /* ---------- Campos ---------- */
 .field { margin-bottom: 18px; }
-.field label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #2b3f63; }
+.field label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: 600; color: #2b3f63; }
 
 .field input[type="email"],
 .field input[type="password"],
@@ -111,7 +111,7 @@ form { text-align: left; }
   background: #f7faff;
   color: var(--navy);
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
   transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
 .field input::placeholder { color: #6b7b96; }
@@ -137,17 +137,17 @@ form { text-align: left; }
 .field__toggle:hover { background: var(--sky); color: var(--blue-link); }
 .field__toggle[aria-pressed="true"] { color: var(--blue-link); }
 
-.field__error { margin: 6px 0 0; font-size: 13px; font-weight: 500; color: var(--error); }
+.field__error { margin: 6px 0 0; font-size: 14px; font-weight: 500; color: var(--error); }
 
 /* ---------- Fila extra ---------- */
 .login__row {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
   gap: 10px 16px; margin: 4px 0 22px;
 }
-.check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #2b3f63; cursor: pointer; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: #2b3f63; cursor: pointer; }
 .check input { width: 18px; height: 18px; accent-color: var(--blue-btn); }
 
-.link { color: var(--blue-link); font-size: 14px; font-weight: 600; text-decoration: none; }
+.link { color: var(--blue-link); font-size: 15px; font-weight: 600; text-decoration: none; }
 .link:hover { color: #08408f; text-decoration: underline; }
 .link--strong { font-weight: 700; }
 
@@ -158,7 +158,7 @@ form { text-align: left; }
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   border: 0; border-radius: var(--radius);
   background: var(--blue-btn); color: #fff;
-  font: inherit; font-size: 16px; font-weight: 700;
+  font: inherit; font-size: 17px; font-weight: 700;
   box-shadow: 0 8px 20px rgba(8, 123, 250, 0.28);
   cursor: pointer;
   transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
@@ -179,7 +179,7 @@ form { text-align: left; }
   outline: 3px solid #6d5bfa; outline-offset: 3px;
 }
 
-.login__footer { margin: 24px 0 0; font-size: 14px; color: var(--text-soft); }
+.login__footer { margin: 24px 0 0; font-size: 15px; color: var(--text-soft); }
 
 /* ---------- Alerta ---------- */
 .alert {
@@ -292,4 +292,7 @@ form { text-align: left; }
   border-color: var(--blue);
   box-shadow: 0 0 0 4px rgba(8, 123, 250, 0.18);
 }
+.field input[type='file'] { padding: 10px; background: #fff; cursor: pointer; }
+.field__hint, .field__files { display: block; margin-top: 7px; font-size: 13px; line-height: 1.45; color: #5c7090; }
+.field__files { color: #075fcf; font-weight: 600; }
 

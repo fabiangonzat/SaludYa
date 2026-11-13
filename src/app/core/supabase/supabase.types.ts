@@ -134,6 +134,51 @@ export interface MessageRow {
   created_at: string;
 }
 
+export type DoctorVerificationStatus = 'pending' | 'approved' | 'rejected';
+
+export interface DoctorVerificationRequestRow {
+  id: string;
+  doctor_profile_id: string;
+  license: string;
+  specialty_name: string;
+  university: string | null;
+  years_experience: number;
+  consultation_price: number;
+  bio: string | null;
+  status: DoctorVerificationStatus;
+  review_note: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  notification_sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DoctorVerificationDocumentRow {
+  id: string;
+  request_id: string;
+  storage_path: string;
+  file_name: string;
+  content_type: string;
+  created_at: string;
+}
+
+export type CommissionStatus = 'accrued' | 'settled' | 'void';
+
+export interface AppointmentCommissionRow {
+  id: string;
+  appointment_id: string;
+  doctor_id: string;
+  gross_amount: number;
+  commission_rate: number;
+  platform_fee: number;
+  doctor_payout: number;
+  status: CommissionStatus;
+  settled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ---------- DATABASE SCHEMA ----------
 
 export type Database = {
@@ -189,6 +234,21 @@ export type Database = {
         Insert: Omit<MessageRow, 'id' | 'created_at' | 'is_read'>;
         Update: Pick<MessageRow, 'is_read'>;
       };
+      doctor_verification_requests: {
+        Row: DoctorVerificationRequestRow;
+        Insert: Omit<DoctorVerificationRequestRow, 'id' | 'status' | 'review_note' | 'reviewed_by' | 'reviewed_at' | 'notification_sent_at' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<DoctorVerificationRequestRow, 'id' | 'doctor_profile_id' | 'created_at'>>;
+      };
+      doctor_verification_documents: {
+        Row: DoctorVerificationDocumentRow;
+        Insert: Omit<DoctorVerificationDocumentRow, 'id' | 'created_at'>;
+        Update: never;
+      };
+      appointment_commissions: {
+        Row: AppointmentCommissionRow;
+        Insert: Omit<AppointmentCommissionRow, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Pick<AppointmentCommissionRow, 'status' | 'settled_at'>>;
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -203,6 +263,10 @@ export type Database = {
       reschedule_appointment: {
         Args: { p_appointment_id: string; p_date: string; p_time: string };
         Returns: AppointmentRow;
+      };
+      review_doctor_verification: {
+        Args: { p_request_id: string; p_decision: 'approved' | 'rejected'; p_review_note?: string | null };
+        Returns: DoctorVerificationRequestRow;
       };
     };
     Enums: Record<string, never>;

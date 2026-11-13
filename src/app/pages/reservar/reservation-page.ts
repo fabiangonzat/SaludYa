@@ -5,11 +5,18 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Doctor, Modality, SPECIALTIES, doctorFullName, doctorSpecialtyName, specialtyFilterLabel } from '../medicos/doctors.models';
 import { DoctorsService } from '../medicos/doctors.service';
 import { AppointmentsService } from '../../services/appointments.service';
+import { AuthService } from '../../services/auth.service';
+import { CulqiCheckoutService } from '../../services/culqi-checkout.service';
+import { PaymentsService } from '../../services/payments.service';
+import { environment } from '../../../environments/environment';
 
 @Component({ selector: 'app-reservation-page', standalone: true, imports: [DatePipe, FormsModule, RouterLink], templateUrl: './reservation-page.html', styleUrl: './reservation-page.css' })
 export class ReservationPage {
   readonly doctorsService = inject(DoctorsService);
   readonly appointments = inject(AppointmentsService);
+  private readonly auth = inject(AuthService);
+  private readonly culqi = inject(CulqiCheckoutService);
+  private readonly payments = inject(PaymentsService);
   private readonly route = inject(ActivatedRoute);
   readonly specialties = SPECIALTIES;
   readonly step = signal(1);
@@ -69,26 +76,45 @@ export class ReservationPage {
   async confirm(): Promise<void> {
     const doctor = this.selectedDoctor();
     if (!doctor || this.busy() || !this.reason().trim()) return;
-    this.busy.set(true); this.message.set('');
-    const result = await this.appointments.create({
-      doctorId: doctor.id,
-      specialtyId: doctor.specialty_id,
-      date: this.date(),
-      time: this.time(),
-      modality: this.modality() as Modality,
-      price: doctor.price,
-      reason: this.reason().trim(),
-      symptoms: this.symptoms().trim(),
-    });
-    this.busy.set(false);
-    if (result.error || !result.data) {
-      this.message.set(result.error ?? 'Ese horario ya no está disponible. Elige otro.');
-      this.step.set(3); this.date.set(''); this.time.set('');
-      await this.doctorsService.load();
+    if (!environment.culqiPublicKey) {
+      this.message.set('Los pagos aún no están configurados. El administrador debe agregar la llave pública de Culqi para activar esta etapa.');
       return;
     }
-    this.createdId.set(result.data.id);
-    this.step.set(6);
+    const user = this.auth.currentUser();
+    if (!user) { this.message.set('Tu sesión expiró. Ingresa nuevamente para pagar.'); return; }
+    this.busy.set(true); this.message.set('');
+    let appointmentId = this.createdId();
+    if (!appointmentId) {
+      const result = await this.appointments.create({
+        doctorId: doctor.id,
+        specialtyId: doctor.specialty_id,
+        date: this.date(),
+        time: this.time(),
+        modality: this.modality() as Modality,
+        price: doctor.price,
+        reason: this.reason().trim(),
+        symptoms: this.symptoms().trim(),
+      });
+      if (result.error || !result.data) {
+        this.busy.set(false);
+        this.message.set(result.error ?? 'Ese horario ya no está disponible. Elige otro.');
+        this.step.set(3); this.date.set(''); this.time.set('');
+        await this.doctorsService.load();
+        return;
+      }
+      appointmentId = result.data.id;
+      this.createdId.set(appointmentId);
+    }
+    try {
+      const paymentToken = await this.culqi.open({ publicKey: environment.culqiPublicKey, amount: Number(doctor.price), email: user.email, fullName: user.fullName });
+      const result = await this.payments.chargeWithCulqi(appointmentId, paymentToken);
+      if (result.error) throw new Error(result.error);
+      this.step.set(6);
+    } catch (error) {
+      this.message.set(error instanceof Error ? error.message : 'No se pudo completar el pago. Puedes intentarlo nuevamente.');
+    } finally {
+      this.busy.set(false);
+    }
   }
   private isFuture(date: string, time: string): boolean {
     const [year, month, day] = date.split('-').map(Number); const [hour, minute] = time.split(':').map(Number);

@@ -51,8 +51,45 @@
     </div>
   </section>
 
+  <section id="finance" class="finance-panel" aria-labelledby="finance-title">
+    <header class="finance-header"><div><span class="finance-kicker">MODELO DE NEGOCIO</span><h2 id="finance-title">Ingresos y comisiones</h2><p>SaludYA retiene el 15% de cada consulta completada; el 85% queda como pago al médico.</p></div><span class="commission-rate">15% comisión SaludYA</span></header>
+    <div class="finance-grid">
+      <article><small>CONSULTAS COMPLETADAS</small><strong>{{finance().consultations}}</strong><span>base para comisiones</span></article>
+      <article><small>VOLUMEN BRUTO</small><strong>{{formatSoles(finance().gross)}}</strong><span>valor total atendido</span></article>
+      <article class="finance-grid__revenue"><small>INGRESO SALUDYA</small><strong>{{formatSoles(finance().platformRevenue)}}</strong><span>15% de las consultas</span></article>
+      <article><small>POR LIQUIDAR A MÉDICOS</small><strong>{{formatSoles(finance().pendingSettlement)}}</strong><span>85% pendiente de pago</span></article>
+    </div>
+    @if(financeMessage()){<p class="finance-message">{{financeMessage()}}</p>}
+    <div class="finance-table-wrap">
+      <h3>Detalle por médico</h3>
+      @if(!doctorEarnings().length){<p class="finance-empty">Las comisiones aparecerán cuando una cita sea marcada como completada.</p>}
+      @else {<table class="finance-table"><thead><tr><th>Médico</th><th>Consultas</th><th>Facturado</th><th>SaludYA (15%)</th><th>Pago médico (85%)</th></tr></thead><tbody>@for(item of doctorEarnings();track item.name){<tr><td>{{item.name}}</td><td>{{item.consultations}}</td><td>{{formatSoles(item.gross)}}</td><td class="platform-income">{{formatSoles(item.commission)}}</td><td>{{formatSoles(item.payout)}}</td></tr>}</tbody></table>}
+    </div>
+    @if(commissions().length){<div class="settlements"><h3>Liquidaciones pendientes</h3>@for(item of commissions();track item.id){@if(item.status === 'accrued'){<article><span><strong>{{item.doctor?.profile?.full_name ?? 'Médico'}}</strong><small>{{formatSoles(item.doctor_payout)}} por pagar · Consulta {{formatSoles(item.gross_amount)}}</small></span><button type="button" (click)="settleCommission(item.id)">Marcar como pagado</button></article>}}</div>}
+  </section>
+
+  <section id="medical-verifications" class="verification-panel">
+    <div class="verification-panel__header">
+      <div><span class="verification-kicker">VALIDACIÓN DE ACCESO</span><h2>Solicitudes de médicos</h2><p>Revisa documentos antes de habilitar un profesional en el directorio.</p></div>
+      <button type="button" class="refresh-btn" (click)="refreshVerifications()">Actualizar</button>
+    </div>
+    @if(verificationMessage()){<p class="verification-message">{{verificationMessage()}}</p>}
+    @if(verificationLoading()){<p class="verification-empty">Cargando solicitudes…</p>}
+    @else if(!verificationRequests().length){<p class="verification-empty">No hay solicitudes de verificación todavía.</p>}
+    @else {<div class="verification-list">
+      @for(request of verificationRequests(); track request.id){<article class="verification-card">
+        <header><div><h3>{{request.applicant?.full_name ?? 'Solicitante'}}</h3><p>{{request.applicant?.email}} · {{request.applicant?.phone ?? 'Sin teléfono'}}</p></div><span class="verification-status" [attr.data-status]="request.status">{{request.status === 'pending' ? 'Pendiente' : request.status === 'approved' ? 'Aprobada' : 'Rechazada'}}</span></header>
+        <dl><div><dt>Licencia</dt><dd>{{request.license}}</dd></div><div><dt>Especialidad</dt><dd>{{request.specialty_name}}</dd></div><div><dt>Institución</dt><dd>{{request.university || '—'}}</dd></div><div><dt>Experiencia</dt><dd>{{request.years_experience}} años</dd></div></dl>
+        @if(request.bio){<p class="verification-bio">{{request.bio}}</p>}
+        <div class="verification-documents"><strong>Documentos adjuntos</strong>@for(document of request.documents; track document.id){<button type="button" (click)="openDocument(document.storage_path)">Ver {{document.file_name}}</button>}@empty{<span>No adjuntó documentos.</span>}</div>
+        @if(request.status === 'pending'){<footer><button type="button" class="verification-reject" (click)="reviewVerification(request.id, 'rejected')">Rechazar</button><button type="button" class="verification-approve" (click)="reviewVerification(request.id, 'approved')">Aprobar médico</button></footer>}
+        @else if(request.review_note){<p class="verification-note">Nota administrativa: {{request.review_note}}</p>}
+      </article>}
+    </div>}
+  </section>
+
   <!-- Tabla de citas -->
-  <section class="table-panel">
+  <section id="appointments-management" class="table-panel">
     <div class="table-panel__header">
       <h2 class="table-panel__title">Todas las citas</h2>
       <div class="table-filters">
@@ -116,7 +153,7 @@
   </section>
 
   <!-- Médicos -->
-  <section class="doctors-panel">
+  <section id="doctors-management" class="doctors-panel">
     <h2 class="doctors-panel__title">Médicos registrados</h2>
     <ul class="doctor-list">
       <li *ngFor="let d of doctors()" class="doctor-item">

@@ -3,7 +3,7 @@ import { NgIf, NgClass } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, UserRole } from '../../services/auth.service';
-import { DoctorsService } from '../medicos/doctors.service';
+import { DoctorVerificationService } from '../../services/doctor-verification.service';
 
 type RegisterField = 'nombre' | 'email' | 'telefono' | 'fechaNacimiento' | 'password' | 'confirmPassword';
 
@@ -17,7 +17,7 @@ type RegisterField = 'nombre' | 'email' | 'telefono' | 'fechaNacimiento' | 'pass
 export class RegisterPage {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
-  private doctorsService = inject(DoctorsService);
+  private verification = inject(DoctorVerificationService);
   private router = inject(Router);
 
   readonly maxBirthDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
@@ -45,6 +45,7 @@ export class RegisterPage {
   showPassword = false;
   errorMessage = signal('');
   successMessage = signal('');
+  doctorDocuments = signal<File[]>([]);
 
   selectRole(role: UserRole): void {
     this.selectedRole.set(role);
@@ -95,10 +96,19 @@ export class RegisterPage {
     this.form.controls.telefono.setValue(input.value);
   }
 
+  onDocumentsSelected(event: Event): void {
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    this.doctorDocuments.set(files);
+  }
+
   async submit(): Promise<void> {
     this.submitted = true;
     this.errorMessage.set('');
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.selectedRole() === 'doctor') {
+      const documentError = this.verification.validateFiles(this.doctorDocuments());
+      if (documentError) { this.errorMessage.set(documentError); return; }
+    }
 
     const value = this.form.getRawValue();
     this.loading.set(true);
@@ -118,25 +128,29 @@ export class RegisterPage {
       return;
     }
 
-    // Si es médico, crear perfil de doctor
+    // Un médico no entra al directorio hasta que Administración apruebe sus documentos.
     if (this.selectedRole() === 'doctor') {
-      const userId = this.auth.session()?.user.id;
-      if (userId) {
-        await this.doctorsService.createDoctorProfile(userId, {
-          specialtyId: null,
+      const verification = await this.verification.submit({
           license: value.licencia,
-          bio: value.bio,
-          price: Number(value.precio) || 0,
-          yearsExperience: Number(value.experiencia) || 0,
-          location: '',
+          specialtyName: value.especialidad,
           university: value.universidad,
-          languages: ['Español'],
-        });
+          yearsExperience: Number(value.experiencia) || 0,
+          consultationPrice: Number(value.precio) || 0,
+          bio: value.bio,
+        }, this.doctorDocuments());
+      if (verification.error) {
+        this.errorMessage.set(`Tu cuenta se creó, pero no se pudo enviar la solicitud: ${verification.error}`);
+        this.loading.set(false);
+        return;
       }
+      this.successMessage.set(verification.notificationSent
+        ? 'Solicitud enviada. Administración recibió los documentos y revisará tu acceso.'
+        : 'Solicitud guardada. Administración podrá revisarla desde el panel.');
+    } else {
+      this.successMessage.set('¡Cuenta creada! Revisa tu correo para confirmarla.');
     }
 
     this.loading.set(false);
-    this.successMessage.set('¡Cuenta creada! Revisa tu correo para confirmarla.');
     setTimeout(() => this.router.navigateByUrl('/login'), 2500);
   }
 }
