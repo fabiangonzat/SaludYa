@@ -102,7 +102,8 @@ form { text-align: left; }
 .field input[type="password"],
 .field input[type="text"],
 .field input[type="tel"],
-.field input[type="date"] {
+.field input[type="date"],
+.field select {
   width: 100%;
   min-height: 48px;
   padding: 0 16px;
@@ -114,15 +115,24 @@ form { text-align: left; }
   font-size: 16px;
   transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
+.field select { padding-right: 42px; cursor: pointer; }
 .field input::placeholder { color: #6b7b96; }
-.field input:hover { border-color: #a9c9f5; }
+.field input:hover, .field select:hover { border-color: #a9c9f5; }
 .field input:focus {
   outline: none;
   background: #fff;
   border-color: var(--blue);
   box-shadow: 0 0 0 4px rgba(8, 123, 250, 0.18);
 }
-.field input[aria-invalid="true"] { border-color: var(--error); background: #fff8f8; }
+.field select:focus {
+  outline: none;
+  background-color: #fff;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(8, 123, 250, 0.18);
+}
+.field select:invalid { color: #6b7b96; }
+.field select option { color: var(--navy); }
+.field input[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: var(--error); background-color: #fff8f8; }
 .field input[aria-invalid="true"]:focus { box-shadow: 0 0 0 4px rgba(198, 40, 40, 0.16); }
 
 .field__password { position: relative; }

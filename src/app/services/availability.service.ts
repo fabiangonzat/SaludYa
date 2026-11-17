@@ -38,7 +38,11 @@ export class AvailabilityService {
     entries: Omit<DoctorAvailabilityRow, 'id' | 'created_at' | 'doctor_id'>[]
   ): Promise<{ error: string | null }> {
     // Borrar existentes y reemplazar
-    await this.supabase.from('doctor_availability').delete().eq('doctor_id', doctorId);
+    const { error: deleteError } = await this.supabase
+      .from('doctor_availability')
+      .delete()
+      .eq('doctor_id', doctorId);
+    if (deleteError) return { error: deleteError.message };
 
     if (entries.length === 0) {
       this.availability.set([]);

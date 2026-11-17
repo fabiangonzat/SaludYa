@@ -75,14 +75,15 @@
         </li>
       </ul>
 
-      <div *ngIf="successMsg()" class="alert alert--success">{{ successMsg() }}</div>
+      <div *ngIf="saveMessage()" class="alert" [ngClass]="'alert--' + saveMessageKind()" role="status" aria-live="polite">{{ saveMessage() }}</div>
+      <div *ngIf="successMsg()" class="alert alert--success" role="status" aria-live="polite">{{ successMsg() }}</div>
 
       <div class="action-row">
-        <button class="btn btn--secondary" (click)="save()" [disabled]="saving()">
+        <button class="btn btn--secondary" (click)="save()" [disabled]="saving() || !doctorId()">
           <span *ngIf="!saving()">Guardar disponibilidad</span>
           <span *ngIf="saving()">Guardando...</span>
         </button>
-        <button class="btn btn--teal" (click)="generateSlots()" [disabled]="generating() || entries().length === 0">
+        <button class="btn btn--teal" (click)="generateSlots()" [disabled]="generating() || !doctorId() || entries().length === 0">
           <span *ngIf="!generating()">Generar slots (60 días)</span>
           <span *ngIf="generating()">Generando...</span>
         </button>

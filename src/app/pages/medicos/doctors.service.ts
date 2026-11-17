@@ -80,6 +80,16 @@ export class DoctorsService {
     return data ? this.toDoctor(data as DoctorDatabaseResult) : null;
   }
 
+  async getIdByProfileId(profileId: string): Promise<{ id: string | null; error: string | null }> {
+    const { data, error } = await this.supabase
+      .from('doctors')
+      .select('id')
+      .eq('profile_id', profileId)
+      .maybeSingle();
+
+    return { id: data?.id ?? null, error: error?.message ?? null };
+  }
+
   async createDoctorProfile(
     profileId: string,
     data: {

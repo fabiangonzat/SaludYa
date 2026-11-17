@@ -27,9 +27,6 @@ export class ReservationPage {
   readonly modality = signal<Modality | ''>('');
   readonly date = signal('');
   readonly time = signal('');
-  readonly reason = signal('');
-  readonly symptoms = signal('');
-  readonly notes = signal('');
   readonly message = signal('');
   readonly busy = signal(false);
   readonly createdId = signal('');
@@ -52,7 +49,7 @@ export class ReservationPage {
       const doctorId = params.get('medico');
       if (doctorId) {
         this.selectedDoctorId.set(doctorId);
-        this.step.set(2);
+        this.step.set(3);
         void this.doctorsService.getById(doctorId).then((doctor) => {
           if (doctor) this.selectedSpecialty.set(doctor.specialty);
           else this.message.set('Ese perfil ya no está disponible.');
@@ -62,20 +59,24 @@ export class ReservationPage {
   }
   fullName(doctor: Doctor): string { return doctorFullName(doctor); }
   selectProfileDoctor():void{const doctor=this.profile();if(!doctor)return;this.selectDoctor(doctor);this.profile.set(null);this.step.set(3);}
-  selectSpecialty(value: string): void { this.selectedSpecialty.set(value); this.selectedDoctorId.set(''); this.modality.set(''); this.date.set(''); this.time.set(''); }
-  selectDoctor(doctor: Doctor): void { this.selectedDoctorId.set(doctor.id); this.selectedSpecialty.set(doctor.specialty); this.modality.set(''); this.date.set(''); this.time.set(''); }
-  selectModality(value: Modality): void { this.modality.set(value); this.date.set(''); this.time.set(''); }
-  selectDate(value: string): void { this.date.set(value); this.time.set(''); }
-  back(): void { if (this.step() > 1) this.step.update((value) => value - 1); }
+  selectSpecialty(value: string): void { this.selectedSpecialty.set(value); this.selectedDoctorId.set(''); this.modality.set(''); this.date.set(''); this.time.set(''); this.createdId.set(''); }
+  selectDoctor(doctor: Doctor): void { this.selectedDoctorId.set(doctor.id); this.selectedSpecialty.set(doctor.specialty); this.modality.set(''); this.date.set(''); this.time.set(''); this.createdId.set(''); }
+  selectModality(value: Modality): void { this.modality.set(value); this.date.set(''); this.time.set(''); this.createdId.set(''); }
+  selectDate(value: string): void { this.date.set(value); this.time.set(''); this.createdId.set(''); }
+  selectTime(value: string): void { this.time.set(value); this.createdId.set(''); }
+  back(): void { if (this.step() > 1 && this.step() < 4) this.step.update((value) => value - 1); }
   continue(): void {
     this.message.set('');
-    const valid = this.step() === 1 ? !!this.selectedSpecialty() : this.step() === 2 ? !!this.selectedDoctorId() : this.step() === 3 ? !!this.modality() && !!this.date() && !!this.time() : this.step() === 4 ? this.reason().trim().length >= 3 : false;
+    const valid = this.step() === 1 ? !!this.selectedSpecialty() : this.step() === 2 ? !!this.selectedDoctorId() : false;
     if (!valid) { this.message.set('Completa los datos requeridos para continuar.'); return; }
-    if (this.step() < 5) this.step.update((value) => value + 1);
+    if (this.step() < 3) this.step.update((value) => value + 1);
   }
   async confirm(): Promise<void> {
     const doctor = this.selectedDoctor();
-    if (!doctor || this.busy() || !this.reason().trim()) return;
+    if (!doctor || this.busy() || !this.modality() || !this.date() || !this.time()) {
+      this.message.set('Selecciona modalidad, fecha y hora para continuar.');
+      return;
+    }
     if (!environment.culqiPublicKey) {
       this.message.set('Los pagos aún no están configurados. El administrador debe agregar la llave pública de Culqi para activar esta etapa.');
       return;
@@ -92,8 +93,7 @@ export class ReservationPage {
         time: this.time(),
         modality: this.modality() as Modality,
         price: doctor.price,
-        reason: this.reason().trim(),
-        symptoms: this.symptoms().trim(),
+        reason: 'Consulta médica',
       });
       if (result.error || !result.data) {
         this.busy.set(false);
@@ -109,7 +109,7 @@ export class ReservationPage {
       const paymentToken = await this.culqi.open({ publicKey: environment.culqiPublicKey, amount: Number(doctor.price), email: user.email, fullName: user.fullName });
       const result = await this.payments.chargeWithCulqi(appointmentId, paymentToken);
       if (result.error) throw new Error(result.error);
-      this.step.set(6);
+      this.step.set(4);
     } catch (error) {
       this.message.set(error instanceof Error ? error.message : 'No se pudo completar el pago. Puedes intentarlo nuevamente.');
     } finally {

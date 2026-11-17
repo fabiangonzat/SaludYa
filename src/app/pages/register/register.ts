@@ -4,8 +4,9 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, UserRole } from '../../services/auth.service';
 import { DoctorVerificationService } from '../../services/doctor-verification.service';
+import { SPECIALTIES } from '../medicos/doctors.models';
 
-type RegisterField = 'nombre' | 'email' | 'telefono' | 'fechaNacimiento' | 'password' | 'confirmPassword';
+type RegisterField = 'nombre' | 'email' | 'telefono' | 'fechaNacimiento' | 'password' | 'confirmPassword' | 'especialidad';
 
 @Component({
   selector: 'app-register',
@@ -21,6 +22,7 @@ export class RegisterPage {
   private router = inject(Router);
 
   readonly maxBirthDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+  readonly specialties = SPECIALTIES;
 
   selectedRole = signal<UserRole>('patient');
 

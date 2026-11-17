@@ -1,16 +1,153 @@
 <main class="booking-page">
-  <header class="page-head"><div><span class="eyebrow">AGENDA SALUDYA</span><h1>Reservar una cita</h1><p>Elige especialidad, profesional y horario; confirma tu reserva con un pago seguro.</p></div><a routerLink="/mis-citas" class="text-link">Mis citas →</a></header>
-  <div class="demo-alert"><strong>Pago seguro con Culqi</strong><span>El pago se procesa en soles. SaludYA confirma la cita únicamente después de recibir la aprobación del cobro.</span></div>
+  <header class="page-head">
+    <div>
+      <span class="eyebrow">AGENDA SALUDYA</span>
+      <h1>Reservar una cita</h1>
+      <p>Elige especialidad, profesional y horario; luego paga de forma segura.</p>
+    </div>
+    <a routerLink="/mis-citas" class="text-link">Mis citas →</a>
+  </header>
+
+  <div class="demo-alert">
+    <strong>Pago seguro con Culqi</strong>
+    <span>Al elegir una fecha y hora podrás continuar directamente a la pasarela de pago.</span>
+  </div>
+
   <section class="booking-card">
-    @if(step() < 6){<div class="progress"><span>Paso {{step()}} de 5</span><div><i [style.width.%]="step()*20"></i></div></div>}
-    @if(step()===1){<h2>¿Qué especialidad buscas?</h2><p class="muted">Selecciona un área para ver los profesionales disponibles en el catálogo de ejemplo.</p><label class="field">Buscar especialidad <input [ngModel]="specialtyQuery()" (ngModelChange)="specialtyQuery.set($event)" placeholder="Ej. cardiología"></label><div class="choice-list">@for(specialty of filteredSpecialties();track specialty){<button type="button" [class.selected]="selectedSpecialty()===specialty" (click)="selectSpecialty(specialty)">{{specialty}} <span>→</span></button>}@empty{<p>No hay especialidades que coincidan con la búsqueda.</p>}</div>}
-    @if(step()===2){<h2>Elige un profesional</h2><p class="muted">{{selectedSpecialty()}} · Perfiles de demostración</p><div class="doctor-list">@for(doctor of doctors();track doctor.id){<article class="doctor-option" [class.selected]="selectedDoctorId()===doctor.id"><span class="avatar" [style.background]="doctor.color">{{doctor.initials}}</span><span class="doc-copy"><strong>{{fullName(doctor)}}</strong><small>{{doctor.specialty}} · {{doctor.yearsExperience}} años</small><small>{{doctor.location}}, {{doctor.city}} · {{doctor.modalities.join(' / ')}}</small><small>Consulta de ejemplo: S/ {{doctor.price}}</small></span><span class="doctor-actions"><button type="button" class="profile-btn" (click)="profile.set(doctor)">Ver perfil</button><button type="button" class="choose-doc" (click)="selectDoctor(doctor)">{{selectedDoctorId()===doctor.id?'Seleccionado':'Seleccionar médico'}}</button></span></article>}@empty{<p>No hay profesionales de ejemplo para esta especialidad. <a routerLink="/medicos">Ver directorio</a></p>}</div>}
-    @if(step()===3){<h2>Modalidad y horario</h2><p class="muted">{{selectedDoctor()?.firstName}} · El horario es ilustrativo y puede cambiar.</p><h3>Modalidad</h3><div class="pills">@for(mode of selectedDoctor()?.modalities??[];track mode){<button type="button" [class.selected]="modality()===mode" (click)="selectModality(mode)">{{mode==='virtual'?'Videoconsulta':'Presencial'}}</button>}</div><h3>Fecha</h3><div class="pills">@for(day of dates();track day){<button type="button" [class.selected]="date()===day" (click)="selectDate(day)">{{day+'T00:00:00'|date:'EEE d MMM':'':'es-PE'}}</button>}@empty{<p>No hay fechas disponibles de ejemplo. Elige otro profesional.</p>}</div><h3>Hora</h3><div class="pills">@for(hour of times();track hour){<button type="button" [class.selected]="time()===hour" (click)="time.set(hour)">{{hour}}</button>}@empty{<p>Selecciona modalidad y fecha para consultar horarios.</p>}</div>}
-    @if(step()===4){<h2>Motivo de consulta</h2><p class="muted">Esto se guarda únicamente en el navegador durante esta sesión.</p><label class="field">Motivo <input [ngModel]="reason()" (ngModelChange)="reason.set($event)" maxlength="160" placeholder="Ej. Consulta de rutina" required></label><label class="field">Síntomas o contexto <textarea [ngModel]="symptoms()" (ngModelChange)="symptoms.set($event)" maxlength="500" rows="3" placeholder="Opcional"></textarea></label><label class="field">Nota adicional <textarea [ngModel]="notes()" (ngModelChange)="notes.set($event)" maxlength="500" rows="2" placeholder="Opcional"></textarea></label>}
-    @if(step()===5){<h2>Revisa y paga tu cita</h2><p class="muted">Culqi procesará un solo pago en soles. La cita se confirma luego de la aprobación.</p><dl class="summary"><div><dt>Especialista</dt><dd>{{selectedDoctor() ? fullName(selectedDoctor()!) : ''}} · {{selectedSpecialty()}}</dd></div><div><dt>Modalidad</dt><dd>{{modality()==='virtual'?'Videoconsulta':'Presencial'}}</dd></div><div><dt>Fecha y hora</dt><dd>{{date()+'T00:00:00'|date:'fullDate':'':'es-PE'}} · {{time()}}</dd></div><div><dt>Motivo</dt><dd>{{reason()}}</dd></div><div><dt>Total a pagar</dt><dd class="payment-total">S/ {{selectedDoctor()?.price}}</dd></div></dl><p class="payment-note">Tu tarjeta o datos de Yape se ingresan directamente en el checkout seguro de Culqi. SaludYA no guarda esos datos.</p>}
-    @if(step()===6){<div class="success"><span>✓</span><h2>Pago aprobado y cita confirmada</h2><p>Tu reserva ya aparece en <a routerLink="/mis-citas">Mis citas</a>. Te notificaremos si el médico realiza algún cambio.</p></div>}
-    @if(message()){<p class="error" role="alert">{{message()}}</p>}
-    <footer class="actions">@if(step()>1&&step()<6){<button type="button" class="secondary" (click)="back()">Atrás</button>}@if(step()<5){<button type="button" class="primary" (click)="continue()">Continuar</button>}@if(step()===5){<button type="button" class="primary payment-button" [disabled]="busy()" (click)="confirm()">{{busy()?'Procesando pago…':'Pagar y confirmar cita'}}</button>}@if(step()===6){<a class="primary" routerLink="/mis-citas">Ver mis citas</a>}@if(step()===1){<a class="secondary" routerLink="/medicos">Ver directorio médico</a>}</footer>
+    @if (step() < 4) {
+      <div class="progress">
+        <span>Paso {{ step() }} de 3</span>
+        <div><i [style.width.%]="step() / 3 * 100"></i></div>
+      </div>
+    }
+
+    @if (step() === 1) {
+      <h2>¿Qué especialidad buscas?</h2>
+      <p class="muted">Selecciona un área para ver profesionales disponibles.</p>
+      <label class="field">Buscar especialidad
+        <input [ngModel]="specialtyQuery()" (ngModelChange)="specialtyQuery.set($event)" placeholder="Ej. cardiología">
+      </label>
+      <div class="choice-list">
+        @for (specialty of filteredSpecialties(); track specialty) {
+          <button type="button" [class.selected]="selectedSpecialty() === specialty" (click)="selectSpecialty(specialty)">
+            {{ specialty }} <span>→</span>
+          </button>
+        } @empty {
+          <p>No hay especialidades que coincidan con la búsqueda.</p>
+        }
+      </div>
+    }
+
+    @if (step() === 2) {
+      <h2>Elige un profesional</h2>
+      <p class="muted">{{ selectedSpecialty() }}</p>
+      <div class="doctor-list">
+        @for (doctor of doctors(); track doctor.id) {
+          <article class="doctor-option" [class.selected]="selectedDoctorId() === doctor.id">
+            <span class="avatar" [style.background]="doctor.color">{{ doctor.initials }}</span>
+            <span class="doc-copy">
+              <strong>{{ fullName(doctor) }}</strong>
+              <small>{{ doctor.specialty }} · {{ doctor.yearsExperience }} años</small>
+              <small>{{ doctor.location }}, {{ doctor.city }} · {{ doctor.modalities.join(' / ') }}</small>
+              <small>Consulta: S/ {{ doctor.price }}</small>
+            </span>
+            <span class="doctor-actions">
+              <button type="button" class="profile-btn" (click)="profile.set(doctor)">Ver perfil</button>
+              <button type="button" class="choose-doc" (click)="selectDoctor(doctor)">
+                {{ selectedDoctorId() === doctor.id ? 'Seleccionado' : 'Seleccionar médico' }}
+              </button>
+            </span>
+          </article>
+        } @empty {
+          <p>No hay profesionales disponibles para esta especialidad. <a routerLink="/medicos">Ver directorio</a></p>
+        }
+      </div>
+    }
+
+    @if (step() === 3) {
+      <h2>Elige fecha y horario</h2>
+      <p class="muted">{{ selectedDoctor() ? fullName(selectedDoctor()!) : '' }} · {{ selectedSpecialty() }}</p>
+
+      <h3>Modalidad</h3>
+      <div class="pills">
+        @for (mode of selectedDoctor()?.modalities ?? []; track mode) {
+          <button type="button" [class.selected]="modality() === mode" (click)="selectModality(mode)">
+            {{ mode === 'virtual' ? 'Videoconsulta' : 'Presencial' }}
+          </button>
+        }
+      </div>
+
+      <h3>Fecha</h3>
+      <div class="pills">
+        @for (day of dates(); track day) {
+          <button type="button" [class.selected]="date() === day" (click)="selectDate(day)">
+            {{ day + 'T00:00:00' | date:'EEE d MMM':'':'es-PE' }}
+          </button>
+        } @empty {
+          <p>No hay fechas disponibles para este profesional y modalidad.</p>
+        }
+      </div>
+
+      <h3>Horario</h3>
+      <div class="pills">
+        @for (hour of times(); track hour) {
+          <button type="button" [class.selected]="time() === hour" (click)="selectTime(hour)">{{ hour }}</button>
+        } @empty {
+          <p>Selecciona modalidad y fecha para ver los horarios.</p>
+        }
+      </div>
+
+      @if (selectedDoctor() && modality() && date() && time()) {
+        <div class="checkout-summary">
+          <div><span>Fecha</span><strong>{{ date() + 'T00:00:00' | date:'fullDate':'':'es-PE' }}</strong></div>
+          <div><span>Hora</span><strong>{{ time() }}</strong></div>
+          <div><span>Modalidad</span><strong>{{ modality() === 'virtual' ? 'Videoconsulta' : 'Presencial' }}</strong></div>
+          <div class="checkout-total"><span>Total</span><strong>S/ {{ selectedDoctor()?.price }}</strong></div>
+          <p>Al continuar se abrirá Culqi para completar el pago.</p>
+        </div>
+      }
+    }
+
+    @if (step() === 4) {
+      <div class="success">
+        <span>✓</span>
+        <h2>Pago aprobado y cita confirmada</h2>
+        <p>Tu reserva ya aparece en <a routerLink="/mis-citas">Mis citas</a>.</p>
+      </div>
+    }
+
+    @if (message()) { <p class="error" role="alert">{{ message() }}</p> }
+
+    <footer class="actions">
+      @if (step() > 1 && step() < 4) {
+        <button type="button" class="secondary" (click)="back()">Atrás</button>
+      }
+      @if (step() === 1 || step() === 2) {
+        <button type="button" class="primary" (click)="continue()">Continuar</button>
+      }
+      @if (step() === 3) {
+        <button type="button" class="primary payment-button" [disabled]="busy() || !modality() || !date() || !time()" (click)="confirm()">
+          {{ busy() ? 'Abriendo pasarela…' : 'Ir a pagar' }}
+          @if (!busy() && selectedDoctor()) { · S/ {{ selectedDoctor()?.price }} }
+        </button>
+      }
+      @if (step() === 4) { <a class="primary" routerLink="/mis-citas">Ver mis citas</a> }
+      @if (step() === 1) { <a class="secondary" routerLink="/medicos">Ver directorio médico</a> }
+    </footer>
   </section>
 </main>
-@if(profile();as doctor){<div class="profile-overlay" (click)="profile.set(null)"><section class="profile-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()"><button type="button" class="profile-close" (click)="profile.set(null)">×</button><span class="avatar large" [style.background]="doctor.color">{{doctor.initials}}</span><span class="eyebrow">PERFIL DE DEMOSTRACIÓN</span><h2>{{fullName(doctor)}}</h2><p>{{doctor.specialty}} · {{doctor.yearsExperience}} años de experiencia de ejemplo</p><p>{{doctor.bio}}</p><p>Atención: {{doctor.modalities.join(' · ')}} · {{doctor.location}}, {{doctor.city}}</p><button type="button" class="primary" (click)="selectProfileDoctor()">Seleccionar médico</button></section></div>}
+
+@if (profile(); as doctor) {
+  <div class="profile-overlay" (click)="profile.set(null)">
+    <section class="profile-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="profile-close" (click)="profile.set(null)">×</button>
+      <span class="avatar large" [style.background]="doctor.color">{{ doctor.initials }}</span>
+      <span class="eyebrow">PERFIL DE DEMOSTRACIÓN</span>
+      <h2>{{ fullName(doctor) }}</h2>
+      <p>{{ doctor.specialty }} · {{ doctor.yearsExperience }} años de experiencia de ejemplo</p>
+      <p>{{ doctor.bio }}</p>
+      <p>Atención: {{ doctor.modalities.join(' · ') }} · {{ doctor.location }}, {{ doctor.city }}</p>
+      <button type="button" class="primary" (click)="selectProfileDoctor()">Seleccionar médico</button>
+    </section>
+  </div>
+}

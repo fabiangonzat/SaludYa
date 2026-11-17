@@ -82,6 +82,7 @@
 .alert { padding: 10px 14px; border-radius: 12px; font-size: 14px; font-weight: 500; margin-top: 8px; }
 .alert--error { background: #fdeaea; color: #9b1c1c; border: 1px solid #f3c1c1; }
 .alert--success { background: #e3f7ea; color: #0a5c2e; border: 1px solid #b7e4c7; }
+.alert--info { background: #eaf3ff; color: #174a8b; border: 1px solid #c5ddf9; }
 
 @media (max-width: 800px) {
   .avail-grid { grid-template-columns: 1fr; }

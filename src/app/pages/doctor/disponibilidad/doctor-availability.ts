@@ -3,6 +3,7 @@ import { NgIf, NgFor, NgClass } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { AvailabilityService, DoctorAvailabilityRow } from '../../../services/availability.service';
+import { DoctorVerificationService } from '../../../services/doctor-verification.service';
 import { DoctorsService } from '../../medicos/doctors.service';
 
 type Modality = 'presencial' | 'virtual';
@@ -25,6 +26,7 @@ interface AvailabilityEntry {
 export class DoctorAvailabilityComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly availabilityService = inject(AvailabilityService);
+  private readonly verificationService = inject(DoctorVerificationService);
   private readonly doctorsService = inject(DoctorsService);
   private readonly fb = inject(FormBuilder);
 
@@ -35,6 +37,8 @@ export class DoctorAvailabilityComponent implements OnInit {
   doctorId = signal<string | null>(null);
   saving = signal(false);
   generating = signal(false);
+  saveMessage = signal('');
+  saveMessageKind = signal<'info' | 'success' | 'error'>('info');
   successMsg = signal('');
   errorMsg = signal('');
 
@@ -50,22 +54,57 @@ export class DoctorAvailabilityComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     const user = this.auth.currentUser();
-    if (user) {
-      const doctor = await this.doctorsService.getByProfileId(user.id);
-      if (doctor) {
-        this.doctorId.set(doctor.id);
-        await this.availabilityService.loadAvailability(doctor.id);
-        // Mapear disponibilidad existente a entries
-        this.entries.set(
-          this.currentAvailability().map((a) => ({
-            dayOfWeek: a.day_of_week,
-            startTime: a.start_time,
-            endTime: a.end_time,
-            slotDurationMinutes: a.slot_duration_minutes,
-            modality: a.modality,
-          }))
-        );
+    if (!user) {
+      this.saveMessageKind.set('error');
+      this.saveMessage.set('No se pudo cargar tu sesión. Cierra sesión y vuelve a ingresar.');
+      return;
+    }
+
+    try {
+      const { id, error: doctorLookupError } = await this.doctorsService.getIdByProfileId(user.id);
+      if (doctorLookupError) {
+        this.saveMessageKind.set('error');
+        this.saveMessage.set('No pudimos consultar tu ficha médica en Supabase: ' + doctorLookupError);
+        return;
       }
+
+      if (!id) {
+        const { request, error } = await this.verificationService.getOwnRequestStatus();
+        this.saveMessageKind.set(error ? 'error' : 'info');
+        if (error) {
+          this.saveMessage.set('No pudimos consultar el estado de tu verificación médica. ' + error);
+        } else if (request?.status === 'pending') {
+          this.saveMessage.set('Tu documentación está pendiente de aprobación. La disponibilidad se habilitará cuando Administración apruebe tu perfil.');
+        } else if (request?.status === 'rejected') {
+          this.saveMessage.set(request.review_note
+            ? `Tu solicitud fue rechazada: ${request.review_note}`
+            : 'Tu solicitud médica fue rechazada. Contacta a Administración para conocer los pasos siguientes.');
+        } else if (request?.status === 'approved') {
+          this.saveMessageKind.set('error');
+          this.saveMessage.set('Tu solicitud figura aprobada, pero falta crear tu perfil profesional. Administración debe reparar ese registro.');
+        } else {
+          this.saveMessageKind.set('error');
+          this.saveMessage.set('Esta cuenta no tiene un perfil profesional ni una solicitud de verificación. Administración debe revisar la cuenta antes de habilitar horarios.');
+        }
+        return;
+      }
+
+      this.doctorId.set(id);
+      await this.availabilityService.loadAvailability(id);
+      // Mapear disponibilidad existente a entries
+      this.entries.set(
+        this.currentAvailability().map((a) => ({
+          dayOfWeek: a.day_of_week,
+          startTime: a.start_time,
+          endTime: a.end_time,
+          slotDurationMinutes: a.slot_duration_minutes,
+          modality: a.modality,
+        }))
+      );
+    } catch (error) {
+      this.saveMessageKind.set('error');
+      this.saveMessage.set('No pudimos cargar tu perfil médico. Revisa tu conexión e inténtalo de nuevo.');
+      console.error('Error al cargar el perfil médico:', error);
     }
   }
 
@@ -95,29 +134,44 @@ export class DoctorAvailabilityComponent implements OnInit {
 
   async save(): Promise<void> {
     const id = this.doctorId();
-    if (!id) return;
-    this.saving.set(true);
-    this.successMsg.set('');
-    this.errorMsg.set('');
-
-    const { error } = await this.availabilityService.saveAvailability(
-      id,
-      this.entries().map((e) => ({
-        day_of_week: e.dayOfWeek,
-        start_time: e.startTime,
-        end_time: e.endTime,
-        slot_duration_minutes: e.slotDurationMinutes,
-        modality: e.modality,
-        is_active: true,
-      }))
-    );
-
-    if (error) {
-      this.errorMsg.set('Error al guardar: ' + error);
-    } else {
-      this.successMsg.set('Disponibilidad guardada correctamente.');
+    if (!id) {
+      if (!this.saveMessage()) {
+        this.saveMessageKind.set('error');
+        this.saveMessage.set('No se puede guardar porque esta cuenta todavía no tiene un perfil médico habilitado.');
+      }
+      return;
     }
-    this.saving.set(false);
+    this.saving.set(true);
+    this.saveMessageKind.set('info');
+    this.saveMessage.set('Guardando disponibilidad…');
+
+    try {
+      const { error } = await this.availabilityService.saveAvailability(
+        id,
+        this.entries().map((e) => ({
+          day_of_week: e.dayOfWeek,
+          start_time: e.startTime,
+          end_time: e.endTime,
+          slot_duration_minutes: e.slotDurationMinutes,
+          modality: e.modality,
+          is_active: true,
+        }))
+      );
+
+      if (error) {
+        this.saveMessageKind.set('error');
+        this.saveMessage.set('No se pudo guardar la disponibilidad: ' + error);
+      } else {
+        this.saveMessageKind.set('success');
+        this.saveMessage.set('Disponibilidad guardada correctamente.');
+      }
+    } catch (error) {
+      this.saveMessageKind.set('error');
+      this.saveMessage.set('No se pudo guardar la disponibilidad. Revisa tu conexión e inténtalo otra vez.');
+      console.error('Error al guardar disponibilidad:', error);
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   async generateSlots(): Promise<void> {

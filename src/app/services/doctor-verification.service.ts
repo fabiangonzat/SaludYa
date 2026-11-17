@@ -4,6 +4,7 @@ import { getSupabaseClient } from '../core/supabase/supabase.client';
 import {
   DoctorVerificationDocumentRow,
   DoctorVerificationRequestRow,
+  DoctorVerificationStatus,
 } from '../core/supabase/supabase.types';
 import { AuthService } from './auth.service';
 
@@ -19,6 +20,11 @@ export interface NewDoctorVerification {
   yearsExperience: number;
   consultationPrice: number;
   bio: string;
+}
+
+export interface OwnDoctorVerificationStatus {
+  status: DoctorVerificationStatus;
+  review_note: string | null;
 }
 
 const BUCKET = 'doctor-verification-documents';
@@ -42,6 +48,19 @@ export class DoctorVerificationService {
     const oversized = files.find((file) => file.size > MAX_FILE_SIZE);
     if (oversized) return 'Cada imagen debe pesar como máximo 8 MB.';
     return null;
+  }
+
+  async getOwnRequestStatus(): Promise<{ request: OwnDoctorVerificationStatus | null; error: string | null }> {
+    const user = this.auth.currentUser();
+    if (!user) return { request: null, error: 'No hay una sesión médica activa.' };
+
+    const { data, error } = await this.supabase
+      .from('doctor_verification_requests')
+      .select('status, review_note')
+      .eq('doctor_profile_id', user.id)
+      .maybeSingle();
+
+    return { request: data, error: error?.message ?? null };
   }
 
   async submit(input: NewDoctorVerification, files: File[]): Promise<{ error: string | null; notificationSent: boolean }> {
