@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { NgIf, NgFor, DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { AppointmentsService, AppointmentWithProfiles } from '../../../services/appointments.service';
 import { DoctorWithProfile, DoctorsService } from '../../medicos/doctors.service';
@@ -9,7 +10,7 @@ import { AvailabilityService } from '../../../services/availability.service';
 @Component({
   selector: 'app-doctor-dashboard',
   standalone: true,
-  imports: [NgIf, NgFor, DatePipe, DecimalPipe, NgClass, RouterLink],
+  imports: [NgIf, NgFor, DatePipe, DecimalPipe, NgClass, RouterLink, FormsModule],
   templateUrl: './doctor-dashboard.html',
   styleUrl: './doctor-dashboard.css',
 })
@@ -24,6 +25,9 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   readonly allAppointments = this.appointmentsService.appointments;
   readonly doctorProfile = signal<DoctorWithProfile | null>(null);
   readonly availability = this.availabilityService.availability;
+  clinicLocation = '';
+  locationMessage = signal('');
+  savingLocation = signal(false);
 
   doctorId = signal<string | null>(null);
   readonly todayDate = new Date();
@@ -62,6 +66,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
       const doctor = await this.doctorsService.getByProfileId(user.id);
       if (doctor) {
         this.doctorProfile.set(doctor);
+        this.clinicLocation = doctor.location;
         this.doctorId.set(doctor.id);
         await this.availabilityService.loadAvailability(doctor.id);
       }
@@ -87,6 +92,20 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     if (reason !== null) {
       await this.appointmentsService.updateStatus(id, 'cancelada', { cancelReason: reason });
     }
+  }
+
+  async saveClinicLocation(): Promise<void> {
+    const doctor = this.doctorProfile();
+    if (!doctor || this.savingLocation()) return;
+    this.savingLocation.set(true);
+    this.locationMessage.set('');
+    const { error } = await this.doctorsService.updateDoctorProfile(doctor.id, { location: this.clinicLocation.trim() || null });
+    if (error) this.locationMessage.set('No se pudo guardar la ubicación. Inténtalo otra vez.');
+    else {
+      this.doctorProfile.set({ ...doctor, location: this.clinicLocation.trim() });
+      this.locationMessage.set('Ubicación del consultorio guardada.');
+    }
+    this.savingLocation.set(false);
   }
 
   statusLabel(status: AppointmentWithProfiles['status']): string {

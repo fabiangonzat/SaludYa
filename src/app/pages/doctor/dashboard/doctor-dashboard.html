@@ -23,6 +23,11 @@
       <strong>{{ doctor.rating | number:'1.1-1' }}</strong>
       <span>{{ doctor.reviewCount }} reseñas</span>
     </div>
+    <form class="clinic-location-form" (ngSubmit)="saveClinicLocation()">
+      <label for="clinic-location">Ubicación del consultorio</label>
+      <div><input id="clinic-location" name="clinicLocation" [(ngModel)]="clinicLocation" placeholder="Calle, número, distrito"><button type="submit" [disabled]="savingLocation()">{{ savingLocation() ? 'Guardando…' : 'Guardar' }}</button></div>
+      @if (locationMessage()) { <small role="status">{{ locationMessage() }}</small> }
+    </form>
     <a routerLink="/perfil" class="profile-edit">Ver mi perfil <span aria-hidden="true">↗</span></a>
   </section>
 
@@ -67,7 +72,8 @@
           <div class="appointment-info"><strong>{{ a.patient?.full_name ?? 'Paciente' }}</strong><span>{{ a.reason || a.specialty }} · {{ a.modality === 'virtual' ? 'Videollamada' : 'Presencial' }}</span></div>
           <span class="status-pill" [ngClass]="statusClass(a.status)">{{ statusLabel(a.status) }}</span>
           <div class="appointment-actions">
-            <button *ngIf="a.status === 'pendiente'" class="icon-action icon-action--confirm" title="Confirmar cita" aria-label="Confirmar cita" (click)="confirmAppointment(a.id)">✓</button>
+            <button *ngIf="a.status === 'pendiente' && a.paymentStatus === 'paid'" class="icon-action icon-action--confirm" title="Confirmar cita pagada" aria-label="Confirmar cita pagada" (click)="confirmAppointment(a.id)">✓</button>
+            <span *ngIf="a.status === 'pendiente' && a.paymentStatus !== 'paid'" class="payment-pending">{{ a.paymentStatus === 'processing' ? 'Pago en proceso' : a.paymentStatus === 'failed' ? 'Pago rechazado' : 'Esperando pago' }}</span>
             <button *ngIf="a.status === 'confirmada'" class="icon-action icon-action--complete" title="Marcar como completada" aria-label="Marcar como completada" (click)="completeAppointment(a.id)">✓</button>
             <button *ngIf="['pendiente','confirmada'].includes(a.status)" class="icon-action icon-action--cancel" title="Cancelar cita" aria-label="Cancelar cita" (click)="cancelAppointment(a.id)">×</button>
           </div>

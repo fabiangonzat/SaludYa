@@ -48,7 +48,7 @@
             <span class="doc-copy">
               <strong>{{ fullName(doctor) }}</strong>
               <small>{{ doctor.specialty }} · {{ doctor.yearsExperience }} años</small>
-              <small>{{ doctor.location }}, {{ doctor.city }} · {{ doctor.modalities.join(' / ') }}</small>
+              <small>{{ doctor.location || 'Consultorio por confirmar' }}{{ doctor.city ? ', ' + doctor.city : '' }} · {{ doctor.modalities.join(' / ') }}</small>
               <small>Consulta: S/ {{ doctor.price }}</small>
             </span>
             <span class="doctor-actions">
@@ -66,44 +66,64 @@
 
     @if (step() === 3) {
       <h2>Elige fecha y horario</h2>
-      <p class="muted">{{ selectedDoctor() ? fullName(selectedDoctor()!) : '' }} · {{ selectedSpecialty() }}</p>
+      @if (selectedDoctor(); as doctor) {
+        <article class="booking-doctor">
+          <span class="avatar" [style.background]="doctor.color">{{ doctor.initials }}</span>
+          <div class="booking-doctor__copy">
+            <span class="eyebrow">TU PROFESIONAL</span>
+            <strong>{{ fullName(doctor) }}</strong>
+            <span>{{ doctor.specialty }} · {{ doctor.yearsExperience }} años de experiencia</span>
+            <span class="booking-doctor__location">⌖ {{ doctor.location || 'Consultorio por confirmar' }}{{ doctor.city ? ', ' + doctor.city : '' }}</span>
+          </div>
+          <span class="booking-doctor__price">S/ {{ doctor.price }}</span>
+        </article>
+      }
+      <p class="muted schedule-intro">Selecciona cómo, cuándo y a qué hora quieres atenderte.</p>
 
-      <h3>Modalidad</h3>
-      <div class="pills">
+      <section class="schedule-section">
+      <h3><span>1</span> Modalidad</h3>
+      <div class="pills mode-pills">
         @for (mode of selectedDoctor()?.modalities ?? []; track mode) {
-          <button type="button" [class.selected]="modality() === mode" (click)="selectModality(mode)">
+          <button type="button" [class.selected]="modality() === mode" [attr.aria-pressed]="modality() === mode" (click)="selectModality(mode)">
             {{ mode === 'virtual' ? 'Videoconsulta' : 'Presencial' }}
           </button>
         }
       </div>
+      </section>
 
-      <h3>Fecha</h3>
-      <div class="pills">
+      <section class="schedule-section">
+      <h3><span>2</span> Fecha</h3>
+      <div class="pills date-pills">
         @for (day of dates(); track day) {
-          <button type="button" [class.selected]="date() === day" (click)="selectDate(day)">
-            {{ day + 'T00:00:00' | date:'EEE d MMM':'':'es-PE' }}
+          <button type="button" [class.selected]="date() === day" [attr.aria-pressed]="date() === day" (click)="selectDate(day)">
+            <span>{{ day + 'T00:00:00' | date:'EEE':'':'es-PE' }}</span>
+            <strong>{{ day + 'T00:00:00' | date:'d MMM':'':'es-PE' }}</strong>
           </button>
         } @empty {
           <p>No hay fechas disponibles para este profesional y modalidad.</p>
         }
       </div>
+      </section>
 
-      <h3>Horario</h3>
-      <div class="pills">
+      <section class="schedule-section">
+      <h3><span>3</span> Horario</h3>
+      <div class="pills time-pills">
         @for (hour of times(); track hour) {
-          <button type="button" [class.selected]="time() === hour" (click)="selectTime(hour)">{{ hour }}</button>
+          <button type="button" [class.selected]="time() === hour" [attr.aria-pressed]="time() === hour" (click)="selectTime(hour)">{{ hour }}</button>
         } @empty {
           <p>Selecciona modalidad y fecha para ver los horarios.</p>
         }
       </div>
+      </section>
 
       @if (selectedDoctor() && modality() && date() && time()) {
         <div class="checkout-summary">
+          <div><span>Médico</span><strong>{{ fullName(selectedDoctor()!) }}</strong></div>
           <div><span>Fecha</span><strong>{{ date() + 'T00:00:00' | date:'fullDate':'':'es-PE' }}</strong></div>
           <div><span>Hora</span><strong>{{ time() }}</strong></div>
           <div><span>Modalidad</span><strong>{{ modality() === 'virtual' ? 'Videoconsulta' : 'Presencial' }}</strong></div>
           <div class="checkout-total"><span>Total</span><strong>S/ {{ selectedDoctor()?.price }}</strong></div>
-          <p>Al continuar se abrirá Culqi para completar el pago.</p>
+          <p>Revisa los datos; al continuar se abrirá Culqi para completar el pago.</p>
         </div>
       }
     }

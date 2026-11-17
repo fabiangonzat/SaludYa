@@ -145,6 +145,7 @@ export interface DoctorVerificationRequestRow {
   years_experience: number;
   consultation_price: number;
   bio: string | null;
+  clinic_address: string | null;
   status: DoctorVerificationStatus;
   review_note: string | null;
   reviewed_by: string | null;

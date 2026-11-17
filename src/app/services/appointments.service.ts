@@ -23,12 +23,14 @@ export interface AppointmentWithProfiles extends AppointmentRow {
   clinicalRecordId?: string;
   demo: true;
   changes: { action: string; at: string; fromDate?: string; fromTime?: string; toDate?: string; toTime?: string; note?: string }[];
+  paymentStatus: 'pending' | 'processing' | 'paid' | 'failed' | 'refunded' | null;
 }
 
 type AppointmentDatabaseResult = AppointmentRow & {
   patient: AppointmentWithProfiles['patient'];
   doctor: { profile: AppointmentWithProfiles['doctor_profile']; specialty: { name: string } | null } | null;
   specialty: { name: string } | null;
+  payment: { status: AppointmentWithProfiles['paymentStatus'] } | { status: AppointmentWithProfiles['paymentStatus'] }[] | null;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -56,7 +58,8 @@ export class AppointmentsService {
         *,
         patient:profiles!appointments_patient_id_fkey(full_name, email, phone, avatar_url),
         specialty:specialties(name),
-        doctor:doctors!appointments_doctor_id_fkey(profile:profiles!doctors_profile_id_fkey(full_name, avatar_url), specialty:specialties(name))
+        doctor:doctors!appointments_doctor_id_fkey(profile:profiles!doctors_profile_id_fkey(full_name, avatar_url), specialty:specialties(name)),
+        payment:appointment_payments(status)
       `)
       .order('date', { ascending: true })
       .order('time', { ascending: true });
@@ -89,6 +92,9 @@ export class AppointmentsService {
     this.channel = this.supabase
       .channel('appointments-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
+        this.load();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_payments' }, () => {
         this.load();
       })
       .subscribe();
@@ -186,6 +192,7 @@ export class AppointmentsService {
       conversationId: undefined,
       clinicalRecordId: undefined,
       demo: true,
+      paymentStatus: Array.isArray(row.payment) ? row.payment[0]?.status ?? null : row.payment?.status ?? null,
       changes: [],
     };
   }

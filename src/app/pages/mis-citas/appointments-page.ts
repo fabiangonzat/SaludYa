@@ -180,6 +180,13 @@ export class AppointmentsPage {
     } as Record<string, string>)[status] ?? status;
   }
 
+  appointmentStatusLabel(appointment: AppointmentWithProfiles): string {
+    if (appointment.status === 'pendiente' && appointment.paymentStatus !== 'paid') {
+      return appointment.paymentStatus === 'processing' ? 'Pago en proceso' : 'Pago pendiente';
+    }
+    return this.statusLabel(appointment.status);
+  }
+
   canChange(appointment: AppointmentWithProfiles): boolean {
     return this.isActive(appointment) && this.isFuture(appointment.date, appointment.time);
   }

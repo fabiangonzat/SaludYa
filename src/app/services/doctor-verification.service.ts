@@ -20,6 +20,7 @@ export interface NewDoctorVerification {
   yearsExperience: number;
   consultationPrice: number;
   bio: string;
+  clinicAddress: string;
 }
 
 export interface OwnDoctorVerificationStatus {
@@ -80,6 +81,7 @@ export class DoctorVerificationService {
         years_experience: input.yearsExperience,
         consultation_price: input.consultationPrice,
         bio: input.bio.trim() || null,
+        clinic_address: input.clinicAddress.trim() || null,
       })
       .select()
       .single();

@@ -39,6 +39,7 @@ export class RegisterPage {
     universidad: [''],
     experiencia: [''],
     bio: [''],
+    consultorio: [''],
     precio: [''],
   }, { validators: this.passwordsMatch });
 
@@ -139,6 +140,7 @@ export class RegisterPage {
           yearsExperience: Number(value.experiencia) || 0,
           consultationPrice: Number(value.precio) || 0,
           bio: value.bio,
+          clinicAddress: value.consultorio,
         }, this.doctorDocuments());
       if (verification.error) {
         this.errorMessage.set(`Tu cuenta se creó, pero no se pudo enviar la solicitud: ${verification.error}`);
