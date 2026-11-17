@@ -3,9 +3,10 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService, UserRole } from '../../services/auth.service';
 
 export function roleGuard(...allowedRoles: UserRole[]): CanActivateFn {
-  return () => {
+  return async () => {
     const auth = inject(AuthService);
     const router = inject(Router);
+    await auth.waitForInitialization();
 
     if (!auth.isLoggedIn()) {
       return router.createUrlTree(['/login']);
@@ -17,6 +18,8 @@ export function roleGuard(...allowedRoles: UserRole[]): CanActivateFn {
     }
 
     // Redirigir al dashboard adecuado según el rol real
+    if (role === 'doctor') return router.createUrlTree(['/doctor']);
+    if (role === 'admin') return router.createUrlTree(['/admin']);
     return router.createUrlTree(['/inicio']);
   };
 }

@@ -16,6 +16,8 @@ export class DashboardLayout {
   readonly sidebarOpen = signal(false);
   readonly user = this.auth.currentUser;
   readonly isAdmin = computed(() => this.user()?.role === 'admin');
+  readonly isDoctor = computed(() => this.user()?.role === 'doctor');
+  readonly homeRoute = computed(() => this.isAdmin() ? '/admin' : this.isDoctor() ? '/doctor' : '/inicio');
   readonly accountName = computed(() => this.user()?.fullName || 'Usuario');
   readonly roleLabel = computed(() => ({
     admin: 'Administrador',

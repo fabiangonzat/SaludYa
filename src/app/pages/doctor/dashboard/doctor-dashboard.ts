@@ -1,15 +1,15 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
-import { NgIf, NgFor, DatePipe, NgClass } from '@angular/common';
+import { NgIf, NgFor, DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { AppointmentsService, AppointmentWithProfiles } from '../../../services/appointments.service';
-import { DoctorsService } from '../../medicos/doctors.service';
+import { DoctorWithProfile, DoctorsService } from '../../medicos/doctors.service';
 import { AvailabilityService } from '../../../services/availability.service';
 
 @Component({
   selector: 'app-doctor-dashboard',
   standalone: true,
-  imports: [NgIf, NgFor, DatePipe, NgClass, RouterLink],
+  imports: [NgIf, NgFor, DatePipe, DecimalPipe, NgClass, RouterLink],
   templateUrl: './doctor-dashboard.html',
   styleUrl: './doctor-dashboard.css',
 })
@@ -22,16 +22,28 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   readonly user = this.auth.currentUser;
   readonly loading = this.appointmentsService.loading;
   readonly allAppointments = this.appointmentsService.appointments;
+  readonly doctorProfile = signal<DoctorWithProfile | null>(null);
+  readonly availability = this.availabilityService.availability;
 
   doctorId = signal<string | null>(null);
+  readonly todayDate = new Date();
 
-  readonly today = new Date().toISOString().slice(0, 10);
+  readonly today = (() => {
+    const date = this.todayDate;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })();
 
   readonly todayAppointments = computed(() =>
     this.allAppointments().filter((a) => a.date === this.today).sort((a, b) => a.time.localeCompare(b.time))
   );
   readonly upcomingAppointments = computed(() =>
-    this.allAppointments().filter((a) => a.date > this.today && a.status !== 'cancelada').slice(0, 5)
+    this.allAppointments()
+      .filter((a) => a.date > this.today && ['pendiente', 'confirmada', 'reprogramada'].includes(a.status))
+      .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
+      .slice(0, 4)
   );
   readonly stats = computed(() => {
     const all = this.allAppointments();
@@ -49,6 +61,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     if (user) {
       const doctor = await this.doctorsService.getByProfileId(user.id);
       if (doctor) {
+        this.doctorProfile.set(doctor);
         this.doctorId.set(doctor.id);
         await this.availabilityService.loadAvailability(doctor.id);
       }
@@ -91,5 +104,10 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
       reprogramada: 'badge--purple', 'en-curso': 'badge--teal',
     };
     return map[status] ?? '';
+  }
+
+  localDate(value: string): Date {
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day);
   }
 }

@@ -17,6 +17,10 @@ export interface AuthUser {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly supabase: SupabaseClient = getSupabaseClient();
+  private resolveInitialLoad!: () => void;
+  private readonly initialLoad = new Promise<void>((resolve) => {
+    this.resolveInitialLoad = resolve;
+  });
 
   // Estado reactivo
   readonly session = signal<Session | null>(null);
@@ -44,7 +48,14 @@ export class AuthService {
     this.supabase.auth.getSession().then(({ data }) => {
       this.session.set(data.session);
       if (data.session) this.loadProfile(data.session.user.id);
-      else this.loading.set(false);
+      else {
+        this.loading.set(false);
+        this.resolveInitialLoad();
+      }
+    }).catch(() => {
+      this.session.set(null);
+      this.loading.set(false);
+      this.resolveInitialLoad();
     });
 
     // Escuchar cambios de sesión en tiempo real
@@ -55,8 +66,13 @@ export class AuthService {
       } else {
         this.profile.set(null);
         this.loading.set(false);
+        this.resolveInitialLoad();
       }
     });
+  }
+
+  async waitForInitialization(): Promise<void> {
+    await this.initialLoad;
   }
 
   async signIn(email: string, password: string): Promise<{ error: string | null }> {
@@ -140,6 +156,7 @@ export class AuthService {
 
     this.profile.set(data ?? null);
     this.loading.set(false);
+    this.resolveInitialLoad();
   }
 
   private async ensureProfile(

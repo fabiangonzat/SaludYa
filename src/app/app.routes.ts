@@ -13,7 +13,7 @@ export const routes: Routes = [
   { path: 'registro', component: RegisterPage, title: 'Registro | SaludYA' },
   {
     path: '', component: DashboardLayout, canActivate: [authGuard], children: [
-      { path: 'inicio', title: 'Menú principal | SaludYA', loadComponent: () => import('./pages/home/home.component').then((m) => m.HomeComponent) },
+      { path: 'inicio', title: 'Menú principal | SaludYA', canActivate: [roleGuard('patient')], loadComponent: () => import('./pages/home/home.component').then((m) => m.HomeComponent) },
       { path: 'perfil', title: 'Mi perfil | SaludYA', loadComponent: () => import('./pages/perfil/perfil.component').then((m) => m.PerfilComponent) },
       { path: 'medicos', title: 'Buscar médicos | SaludYA', loadComponent: () => import('./pages/medicos/doctors-page').then((m) => m.DoctorsPage) },
       { path: 'especialidades', title: 'Especialidades | SaludYA', loadComponent: () => import('./pages/especialidades/specialties-page').then((m) => m.SpecialtiesPage) },
