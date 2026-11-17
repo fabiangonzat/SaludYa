@@ -29,6 +29,7 @@ export class MessagesPage implements OnInit, OnDestroy {
   readonly mobileChatOpen = signal(false);
   readonly draft = signal('');
   readonly contacts = signal<ContactChoice[]>([]);
+  readonly contactsError = signal<string | null>(null);
   readonly contactQuery = signal('');
   readonly contactsLoading = signal(false);
   readonly contactPickerOpen = signal(false);
@@ -54,15 +55,28 @@ export class MessagesPage implements OnInit, OnDestroy {
 
   async loadContacts(): Promise<void> {
     this.contactsLoading.set(true);
+    this.contactsError.set(null);
     const user = this.user();
     if (!user) { this.contactsLoading.set(false); return; }
     await this.appointments.load();
+    if (this.appointments.error()) {
+      this.contacts.set([]);
+      this.contactsError.set(`${this.appointments.error()} Comprueba que tu ficha y tus permisos estén vinculados correctamente.`);
+      this.contactsLoading.set(false);
+      return;
+    }
     if (this.isDoctor()) {
       const doctor = await this.doctors.getByProfileId(user.id);
+      if (!doctor) {
+        this.contacts.set([]);
+        this.contactsError.set('No encontramos una ficha profesional asociada a esta cuenta. Verifica que la aprobación del perfil médico haya creado su ficha en SaludYA.');
+        this.contactsLoading.set(false);
+        return;
+      }
       const uniquePatients = new Map<string, ContactChoice>();
       for (const appointment of this.appointments.appointments()) {
         const patient = appointment.patient;
-        if (patient && !uniquePatients.has(appointment.patient_id) && doctor) {
+        if (patient && !uniquePatients.has(appointment.patient_id)) {
           uniquePatients.set(appointment.patient_id, {
             id: appointment.patient_id,
             doctorId: doctor.id,
@@ -77,6 +91,12 @@ export class MessagesPage implements OnInit, OnDestroy {
       this.contacts.set([...uniquePatients.values()]);
     } else {
       await this.doctors.load();
+      if (this.doctors.error()) {
+        this.contacts.set([]);
+        this.contactsError.set(this.doctors.error());
+        this.contactsLoading.set(false);
+        return;
+      }
       const relatedDoctorIds = new Set(this.appointments.appointments().map((appointment) => appointment.doctor_id));
       this.contacts.set(this.doctors.doctors().filter((doctor) => relatedDoctorIds.has(doctor.id)).map((doctor) => ({
         id: doctor.id,

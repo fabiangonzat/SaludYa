@@ -41,6 +41,7 @@
         <p class="modal-intro">{{isDoctor()?'Solo aparecen pacientes con una cita vinculada a tu perfil.':'Solo aparecen médicos con quienes tienes una cita registrada.'}}</p>
         <label class="contact-search"><span>⌕</span><input type="search" [value]="contactQuery()" (input)="contactQuery.set($any($event.target).value)" placeholder="Buscar por nombre" aria-label="Buscar contacto"></label>
         @if(contactsLoading()){<div class="contact-loading">Cargando contactos de tu atención…</div>}
+        @else if(contactsError()){<div class="contacts-empty"><strong>No pudimos cargar tus contactos</strong><p>{{contactsError()}}</p><button type="button" class="retry-contacts" (click)="loadContacts()">Reintentar</button></div>}
         @else if(filteredContacts().length){<div class="contact-list">@for(contact of filteredContacts();track contact.id){<button type="button" class="contact-option" (click)="startConversation(contact)"><span class="contact-avatar">@if(contact.avatarUrl){<img [src]="contact.avatarUrl" alt="">}@else{<span>{{contact.initials}}</span>}</span><span class="contact-info"><strong>{{contact.name}}</strong><small>{{contact.specialty}}</small></span><span class="arrow">→</span></button>}</div>}
         @else{<div class="contacts-empty"><strong>{{contactQuery()?'No encontramos ese contacto':'Aún no hay contactos vinculados'}}</strong><p>{{isDoctor()?'Los pacientes aparecerán tras registrar una cita en tu agenda.':'Para iniciar una conversación debe existir una cita registrada con ese médico.'}}</p></div>}
       </section>
