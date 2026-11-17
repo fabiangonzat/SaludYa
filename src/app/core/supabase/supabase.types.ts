@@ -126,12 +126,36 @@ export interface AppointmentChangeRow {
 
 export interface MessageRow {
   id: string;
+  conversation_id: string | null;
   sender_id: string;
   receiver_id: string;
   appointment_id: string | null;
   content: string;
+  message_type: 'text' | 'image' | 'document';
+  attachment_path: string | null;
   is_read: boolean;
+  read_at: string | null;
   created_at: string;
+}
+
+export interface ConversationRow {
+  id: string;
+  patient_id: string;
+  doctor_id: string;
+  created_at: string;
+  updated_at: string;
+  last_message_at: string | null;
+}
+
+export interface ConversationSummaryRow {
+  conversation_id: string;
+  counterpart_id: string;
+  counterpart_name: string;
+  counterpart_avatar: string | null;
+  specialty: string | null;
+  last_message: string | null;
+  last_message_at: string;
+  unread_count: number;
 }
 
 export type DoctorVerificationStatus = 'pending' | 'approved' | 'rejected';
@@ -234,6 +258,11 @@ export type Database = {
         Insert: Omit<MessageRow, 'id' | 'created_at' | 'is_read'>;
         Update: Pick<MessageRow, 'is_read'>;
       };
+      conversations: {
+        Row: ConversationRow;
+        Insert: Omit<ConversationRow, 'id' | 'created_at' | 'updated_at' | 'last_message_at'>;
+        Update: never;
+      };
       doctor_verification_requests: {
         Row: DoctorVerificationRequestRow;
         Insert: Omit<DoctorVerificationRequestRow, 'id' | 'status' | 'review_note' | 'reviewed_by' | 'reviewed_at' | 'notification_sent_at' | 'created_at' | 'updated_at'>;
@@ -267,6 +296,22 @@ export type Database = {
       review_doctor_verification: {
         Args: { p_request_id: string; p_decision: 'approved' | 'rejected'; p_review_note?: string | null };
         Returns: DoctorVerificationRequestRow;
+      };
+      open_care_conversation: {
+        Args: { p_doctor_id: string; p_patient_id?: string | null };
+        Returns: ConversationRow;
+      };
+      send_conversation_message: {
+        Args: { p_conversation_id: string; p_content: string; p_message_type?: string; p_attachment_path?: string | null };
+        Returns: MessageRow;
+      };
+      mark_conversation_read: {
+        Args: { p_conversation_id: string };
+        Returns: number;
+      };
+      get_my_conversations: {
+        Args: Record<string, never>;
+        Returns: ConversationSummaryRow[];
       };
     };
     Enums: Record<string, never>;

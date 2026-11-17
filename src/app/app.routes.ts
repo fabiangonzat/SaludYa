@@ -19,7 +19,7 @@ export const routes: Routes = [
       { path: 'especialidades', title: 'Especialidades | SaludYA', loadComponent: () => import('./pages/especialidades/specialties-page').then((m) => m.SpecialtiesPage) },
       { path: 'reservar', title: 'Reservar una cita | SaludYA', loadComponent: () => import('./pages/reservar/reservation-page').then((m) => m.ReservationPage) },
       { path: 'mis-citas', title: 'Mis citas | SaludYA', loadComponent: () => import('./pages/mis-citas/appointments-page').then((m) => m.AppointmentsPage) },
-      { path: 'mensajes', title: 'Mensajes | SaludYA', loadComponent: () => import('./pages/mensajes/messages-page').then((m) => m.MessagesPage) },
+      { path: 'mensajes', title: 'Mensajes | SaludYA', canActivate: [roleGuard('patient', 'doctor')], loadComponent: () => import('./pages/mensajes/messages-page').then((m) => m.MessagesPage) },
       { path: 'historial', title: 'Historial médico | SaludYA', loadComponent: () => import('./pages/historial/medical-history-page').then((m) => m.MedicalHistoryPage) },
       { path: 'bienestar', title: 'Mi bienestar | SaludYA', loadComponent: () => import('./pages/bienestar/wellness-page').then((m) => m.WellnessPage) },
       { path: 'doctor', title: 'Panel del médico | SaludYA', canActivate: [roleGuard('doctor')], loadComponent: () => import('./pages/doctor/dashboard/doctor-dashboard').then((m) => m.DoctorDashboardComponent) },

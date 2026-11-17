@@ -1,1 +1,49 @@
-<section class="messages-page" [class.messages-page--chat-open]="mobileChatOpen()"><header class="messages-title"><div><p class="kicker">COMUNICACIÓN MÉDICA</p><h1>Mensajes</h1><p>Comunícate con tus especialistas de forma segura.</p></div><button class="notification-button" type="button" (click)="notificationOpen.set(!notificationOpen())" [attr.aria-expanded]="notificationOpen()">♧ @if(unreadCount()){<span>{{unreadCount()}}</span>}</button>@if(notificationOpen()){<div class="notification-popover"><strong>Mensajes no leídos</strong><p>{{unreadCount()?'Tienes '+unreadCount()+' mensajes sin leer.':'No tienes mensajes pendientes.'}}</p></div>}</header><div class="demo-warning"><span>ⓘ</span><p><strong>Modo demostración.</strong> Conversaciones, especialistas y mensajes de ejemplo; no hay comunicación real ni conexión en tiempo real.</p></div>@if(toast()){<div class="toast" role="status">{{toast()}}</div>}<div class="messages-layout"><app-conversation-list [items]="visibleConversations()" [selectedId]="selectedId()" [counts]="counts()" [filter]="filter()" [query]="query()" [mobileChatOpen]="mobileChatOpen()" (select)="selectConversation($event)" (newConversation)="modalOpen.set(true)" (filterChange)="filter.set($event)" (queryChange)="query.set($event)"/><app-chat-window [conversation]="selected()" [messages]="selectedMessages()" [draft]="draft()" (draftChange)="draft.set($event)" (send)="sendMessage()" (back)="mobileChatOpen.set(false)" (archive)="archive($event)" [pendingAttachment]="pendingAttachment()" (pendingAttachmentChange)="pendingAttachment.set($event)" (filesSelected)="handleFiles($event)"/></div>@if(modalOpen()){<div class="modal-backdrop" (click)="modalOpen.set(false)"><section class="new-modal" role="dialog" aria-modal="true" aria-labelledby="new-title" (click)="$event.stopPropagation()"><header><div><p class="kicker">DIRECTORIO DE DEMOSTRACIÓN</p><h2 id="new-title">Nueva conversación</h2></div><button type="button" class="close" (click)="modalOpen.set(false)" aria-label="Cerrar">×</button></header><p class="modal-intro">Selecciona un especialista de ejemplo. La conversación no contactará al médico.</p><input class="doctor-search" type="search" placeholder="Buscar especialista..." [value]="doctorQuery()" (input)="doctorQuery.set($any($event.target).value)"><select class="specialty-filter" [value]="doctorSpecialty()" (change)="doctorSpecialty.set($any($event.target).value)">@for(s of specialties;track s){<option [value]="s">{{s}}</option>}</select><div class="doctor-options">@for(d of filteredDoctors();track d.id){<button type="button" class="doctor-option" (click)="startConversation(d)"><span class="doctor-avatar" [style.background]="d.color">{{d.initials}}</span><span><strong>{{d.name}}</strong><small>{{d.specialty}} · Perfil de demostración</small></span><span class="option-arrow">›</span></button>}@empty{<p class="no-doctors">No hay especialistas que coincidan con la búsqueda.</p>}</div></section></div>}</section>
+<section class="messages-page" [class.messages-page--chat-open]="mobileChatOpen()">
+  <header class="messages-title">
+    <div><p class="kicker">COMUNICACIÓN MÉDICA PRIVADA</p><h1>Mensajes</h1><p>{{isDoctor()?'Conversaciones con tus pacientes':'Conversaciones con tus médicos'}}</p></div>
+    <div class="inbox-summary"><span class="online-indicator"></span>{{unreadCount() ? unreadCount() + ' sin leer' : 'Mensajes privados'}}</div>
+  </header>
+  @if(service.error()){<div class="service-error" role="alert"><span>!</span><p>{{service.error()}}</p><button type="button" (click)="service.loadConversations()">Reintentar</button></div>}
+  <div class="messages-layout">
+    <app-conversation-list
+      [items]="visibleConversations()"
+      [selectedId]="selectedId()"
+      [counts]="counts()"
+      [filter]="filter()"
+      [query]="query()"
+      [loading]="service.loadingConversations()"
+      [isDoctor]="isDoctor()"
+      [mobileChatOpen]="mobileChatOpen()"
+      (select)="selectConversation($event)"
+      (newConversation)="openContactPicker()"
+      (filterChange)="filter.set($event)"
+      (queryChange)="query.set($event)" />
+    <app-chat-window
+      [conversation]="selected()"
+      [messages]="service.messages()"
+      [currentUserId]="user()?.id ?? ''"
+      [loading]="service.loadingMessages()"
+      [sending]="service.sending()"
+      [error]="service.error()"
+      [hasOlderMessages]="service.hasOlderMessages()"
+      [draft]="draft()"
+      (draftChange)="draft.set($event)"
+      (send)="sendMessage()"
+      (back)="closeMobileChat()"
+      (loadOlder)="service.loadOlderMessages()"
+      (fileSelected)="sendAttachment($event)" />
+  </div>
+
+  @if(contactPickerOpen()){
+    <div class="modal-backdrop" (click)="contactPickerOpen.set(false)">
+      <section class="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-title" (click)="$event.stopPropagation()">
+        <header><div><p class="kicker">RELACIÓN DE ATENCIÓN</p><h2 id="contact-title">{{isDoctor()?'Contactar a un paciente':'Contactar a un médico'}}</h2></div><button type="button" class="close" (click)="contactPickerOpen.set(false)" aria-label="Cerrar">×</button></header>
+        <p class="modal-intro">{{isDoctor()?'Solo aparecen pacientes con una cita vinculada a tu perfil.':'Solo aparecen médicos con quienes tienes una cita registrada.'}}</p>
+        <label class="contact-search"><span>⌕</span><input type="search" [value]="contactQuery()" (input)="contactQuery.set($any($event.target).value)" placeholder="Buscar por nombre" aria-label="Buscar contacto"></label>
+        @if(contactsLoading()){<div class="contact-loading">Cargando contactos de tu atención…</div>}
+        @else if(filteredContacts().length){<div class="contact-list">@for(contact of filteredContacts();track contact.id){<button type="button" class="contact-option" (click)="startConversation(contact)"><span class="contact-avatar">@if(contact.avatarUrl){<img [src]="contact.avatarUrl" alt="">}@else{<span>{{contact.initials}}</span>}</span><span class="contact-info"><strong>{{contact.name}}</strong><small>{{contact.specialty}}</small></span><span class="arrow">→</span></button>}</div>}
+        @else{<div class="contacts-empty"><strong>{{contactQuery()?'No encontramos ese contacto':'Aún no hay contactos vinculados'}}</strong><p>{{isDoctor()?'Los pacientes aparecerán tras registrar una cita en tu agenda.':'Para iniciar una conversación debe existir una cita registrada con ese médico.'}}</p></div>}
+      </section>
+    </div>
+  }
+</section>

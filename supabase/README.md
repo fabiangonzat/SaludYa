@@ -46,6 +46,28 @@ Las funciones `book_appointment`, `reschedule_appointment` y
 `change_appointment_status` bloquean el slot durante la operación para impedir
 reservas dobles incluso si dos pacientes intentan elegir la misma hora.
 
+## Mensajería médica en tiempo real
+
+La migración `20261117090000_secure_clinical_messaging.sql` reutiliza la tabla
+`messages`, conserva los mensajes antiguos vinculables a una cita, crea una
+conversación única por pareja paciente/médico y restringe lectura y envío con
+RLS y funciones que validan la relación en `appointments`. El contenido sigue
+persistido en PostgreSQL; Realtime solo avisa a las sesiones conectadas. Los
+archivos usan el bucket privado `clinical-messages` y URL firmadas de corta
+duración.
+
+Después de revisar la migración, aplícala al proyecto conectado:
+
+```powershell
+npx supabase login
+npx supabase link --project-ref spefixwemgfbndnofzei
+npx supabase db push
+```
+
+El frontend muestra únicamente contactos con una relación de cita existente.
+La migración debe estar aplicada antes de que Mensajes pueda abrir conversaciones
+o enviar mensajes en la base real.
+
 ## Verificación de médicos y aviso al administrador
 
 La migración `20261109090000_doctor_verification.sql` añade el proceso de

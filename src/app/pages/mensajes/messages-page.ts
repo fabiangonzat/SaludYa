@@ -1,58 +1,132 @@
-import { Component, HostListener, computed, signal } from '@angular/core';
-import { ConversationItem, ConversationListComponent } from './components/conversation-list.component';
+import { Component, HostListener, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { AppointmentsService } from '../../services/appointments.service';
+import { MessagesService, ConversationItem } from '../../services/messages.service';
+import { DoctorsService } from '../medicos/doctors.service';
+import { ConversationListComponent } from './components/conversation-list.component';
 import { ChatWindowComponent } from './components/chat-window.component';
-import { ChatMessage } from './message-bubble.component';
 
-type DemoConversation = ConversationItem & { messages: ChatMessage[] };
-type Filter = 'all' | 'unread' | 'archived';
-const recent = (minutes:number) => new Date(Date.now()-minutes*60_000);
-const demoConversations: DemoConversation[] = [
- {id:'demo-cardio',doctorName:'Dra. Elena Vargas',specialty:'Cardiología',initials:'EV',color:'linear-gradient(135deg,#58a6e8,#526bdb)',available:true,unread:2,archived:false,updatedAt:recent(12),lastMessage:'De acuerdo, doctora. Gracias.',messages:[
-  {id:'m1',sender:'doctor',text:'Hola. Te escribo para confirmar que recibí tu consulta. ¿En qué puedo ayudarte?',date:recent(180)},
-  {id:'m2',sender:'patient',text:'Quería confirmar los detalles de mi próxima cita.',date:recent(170),status:'read'},
-  {id:'m3',sender:'doctor',text:'Claro. Podemos revisar eso durante la consulta. Si tienes documentación que quieras comentar, tráela contigo.',date:recent(25)},
-  {id:'m4',sender:'doctor',text:'¿Te queda bien el horario que aparece en tu agenda?',date:recent(12)},
-  {id:'m5',sender:'patient',text:'De acuerdo, doctora. Gracias.',date:recent(8),status:'sent'},
- ]},
- {id:'demo-derma',doctorName:'Dr. Mateo Salas',specialty:'Dermatología',initials:'MS',color:'linear-gradient(135deg,#46bba3,#258b91)',available:false,unread:0,archived:false,updatedAt:recent(260),lastMessage:'Perfecto, nos vemos en la consulta.',messages:[
-  {id:'d1',sender:'patient',text:'Hola doctor, quisiera conversar sobre mi consulta de seguimiento.',date:recent(330),status:'read'},
-  {id:'d2',sender:'doctor',text:'Perfecto, nos vemos en la consulta.',date:recent(260)},
- ]},
- {id:'demo-general',doctorName:'Dra. Lucía Paredes',specialty:'Medicina general',initials:'LP',color:'linear-gradient(135deg,#e5a458,#d97862)',available:true,unread:0,archived:true,updatedAt:recent(1440),lastMessage:'Gracias por avisarme.',messages:[{id:'g1',sender:'patient',text:'Gracias por avisarme.',date:recent(1440),status:'delivered'}]},
-];
-const availableDoctors=[
- {id:'new-pedia',name:'Dra. Ana Ríos',specialty:'Pediatría',initials:'AR',color:'linear-gradient(135deg,#b78bea,#8060cb)'},
- {id:'new-psico',name:'Dr. Diego León',specialty:'Psicología',initials:'DL',color:'linear-gradient(135deg,#64bd9d,#399b82)'},
- {id:'new-neuro',name:'Dra. Sofía Núñez',specialty:'Neurología',initials:'SN',color:'linear-gradient(135deg,#6c9fec,#5366c4)'},
-];
-@Component({selector:'app-messages-page',standalone:true,imports:[ConversationListComponent,ChatWindowComponent],templateUrl:'./messages-page.html',styleUrl:'./messages-page.css'})
-export class MessagesPage {
- readonly conversations=signal<DemoConversation[]>(demoConversations);
- readonly selectedId=signal<string|null>(null);
- readonly filter=signal<Filter>('all');
- readonly query=signal('');
- readonly mobileChatOpen=signal(false);
- readonly draft=signal('');
- readonly pendingAttachment=signal('');
- readonly toast=signal('');
- readonly modalOpen=signal(false);
- readonly doctorQuery=signal('');
- readonly doctorSpecialty=signal('Todas');
- readonly notificationOpen=signal(false);
- readonly specialties=['Todas','Cardiología','Dermatología','Medicina general','Pediatría','Psicología','Neurología'];
- readonly doctors=availableDoctors;
- readonly filteredDoctors=computed(()=>this.doctors.filter(d=>(this.doctorSpecialty()==='Todas'||d.specialty===this.doctorSpecialty())&&(d.name+' '+d.specialty).toLowerCase().includes(this.doctorQuery().toLowerCase())));
- readonly visibleConversations=computed(()=>this.conversations().filter(c=>this.filter()==='archived'?c.archived:!c.archived&&(this.filter()==='all'||c.unread>0)).filter(c=>(c.doctorName+' '+c.specialty+' '+c.lastMessage).toLowerCase().includes(this.query().toLowerCase())).sort((a,b)=>b.updatedAt.getTime()-a.updatedAt.getTime()));
- readonly unreadCount=computed(()=>this.conversations().filter(c=>!c.archived).reduce((n,c)=>n+c.unread,0));
- readonly counts=computed(()=>({all:this.conversations().filter(c=>!c.archived).length,unread:this.unreadCount()}));
- readonly selected=computed(()=>this.conversations().find(c=>c.id===this.selectedId())??null);
- readonly selectedMessages=computed(()=>this.selected()?.messages??[]);
- private toastTimer?:ReturnType<typeof setTimeout>;
- selectConversation(id:string):void{this.selectedId.set(id);this.mobileChatOpen.set(true);this.conversations.update(list=>list.map(c=>c.id===id?{...c,unread:0}:c));}
- sendMessage():void{const text=this.draft().trim();const attachment=this.pendingAttachment();if(!text&&!attachment)return;const c=this.selected();if(!c)return;const now=new Date();const message:ChatMessage={id:crypto.randomUUID(),sender:'patient',text:text||'Archivo adjunto',date:now,status:'sent',attachment:attachment||undefined};this.conversations.update(list=>list.map(item=>item.id===c.id?{...item,messages:[...item.messages,message],lastMessage:message.text,updatedAt:now}:item));this.draft.set('');this.pendingAttachment.set('');this.notify('Mensaje agregado a la demostración; no se envió a un médico.');}
- handleFiles(event:Event):void{const input=event.target as HTMLInputElement;const files=Array.from(input.files??[]);if(!files.length)return;const allowed=['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];const file=files[0];if(!allowed.includes(file.type)){this.notify('Formato no permitido. Usa JPG, PNG, WEBP, PDF o DOC.');input.value='';return;}if(file.size>5*1024*1024){this.notify('El archivo supera el límite de 5 MB.');input.value='';return;}this.pendingAttachment.set(file.name);this.notify('Adjunto local de demostración: aún no se ha subido.');input.value='';}
- archive(id:string):void{this.conversations.update(list=>list.map(c=>c.id===id?{...c,archived:!c.archived,unread:0}:c));this.selectedId.set(null);this.mobileChatOpen.set(false);this.notify('Conversación actualizada en esta demostración.');}
- startConversation(doctor:typeof availableDoctors[number]):void{let c=this.conversations().find(x=>x.id===doctor.id);if(!c){const now=new Date();c={id:doctor.id,doctorName:doctor.name,specialty:doctor.specialty,initials:doctor.initials,color:doctor.color,available:true,unread:0,archived:false,updatedAt:now,lastMessage:'Nueva conversación de demostración',messages:[]};this.conversations.update(list=>[c!,...list]);}this.filter.set('all');this.query.set('');this.modalOpen.set(false);this.selectConversation(c.id);}
- notify(message:string):void{this.toast.set(message);if(this.toastTimer)clearTimeout(this.toastTimer);this.toastTimer=setTimeout(()=>this.toast.set(''),3500);}
- @HostListener('document:keydown.escape') closeModal():void{this.modalOpen.set(false);this.notificationOpen.set(false);}
+interface ContactChoice { id: string; doctorId: string; patientId?: string; name: string; specialty: string; avatarUrl: string | null; initials: string; }
+type Filter = 'all' | 'unread';
+
+@Component({
+  selector: 'app-messages-page',
+  standalone: true,
+  imports: [ConversationListComponent, ChatWindowComponent],
+  templateUrl: './messages-page.html',
+  styleUrl: './messages-page.css',
+})
+export class MessagesPage implements OnInit, OnDestroy {
+  private readonly auth = inject(AuthService);
+  private readonly appointments = inject(AppointmentsService);
+  private readonly doctors = inject(DoctorsService);
+  readonly service = inject(MessagesService);
+  readonly user = this.auth.currentUser;
+  readonly isDoctor = computed(() => this.user()?.role === 'doctor');
+  readonly selectedId = signal<string | null>(null);
+  readonly filter = signal<Filter>('all');
+  readonly query = signal('');
+  readonly mobileChatOpen = signal(false);
+  readonly draft = signal('');
+  readonly contacts = signal<ContactChoice[]>([]);
+  readonly contactQuery = signal('');
+  readonly contactsLoading = signal(false);
+  readonly contactPickerOpen = signal(false);
+  readonly selected = computed(() => this.service.conversations().find((c) => c.id === this.selectedId()) ?? null);
+  readonly visibleConversations = computed(() => this.service.conversations()
+    .filter((conversation) => this.filter() === 'all' || conversation.unread > 0)
+    .filter((conversation) => `${conversation.name} ${conversation.specialty} ${conversation.lastMessage}`.toLocaleLowerCase('es').includes(this.query().toLocaleLowerCase('es'))));
+  readonly filteredContacts = computed(() => this.contacts().filter((contact) =>
+    `${contact.name} ${contact.specialty}`.toLocaleLowerCase('es').includes(this.contactQuery().trim().toLocaleLowerCase('es'))));
+  readonly unreadCount = computed(() => this.service.conversations().reduce((count, conversation) => count + conversation.unread, 0));
+  readonly counts = computed(() => ({
+    all: this.service.conversations().length,
+    unread: this.unreadCount(),
+  }));
+
+  async ngOnInit(): Promise<void> {
+    await Promise.all([this.service.loadConversations(), this.loadContacts()]);
+  }
+
+  ngOnDestroy(): void {
+    this.service.closeConversation();
+  }
+
+  async loadContacts(): Promise<void> {
+    this.contactsLoading.set(true);
+    const user = this.user();
+    if (!user) { this.contactsLoading.set(false); return; }
+    await this.appointments.load();
+    if (this.isDoctor()) {
+      const doctor = await this.doctors.getByProfileId(user.id);
+      const uniquePatients = new Map<string, ContactChoice>();
+      for (const appointment of this.appointments.appointments()) {
+        const patient = appointment.patient;
+        if (patient && !uniquePatients.has(appointment.patient_id) && doctor) {
+          uniquePatients.set(appointment.patient_id, {
+            id: appointment.patient_id,
+            doctorId: doctor.id,
+            patientId: appointment.patient_id,
+            name: patient.full_name,
+            specialty: appointment.specialty,
+            avatarUrl: patient.avatar_url,
+            initials: patient.full_name.split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase(),
+          });
+        }
+      }
+      this.contacts.set([...uniquePatients.values()]);
+    } else {
+      await this.doctors.load();
+      const relatedDoctorIds = new Set(this.appointments.appointments().map((appointment) => appointment.doctor_id));
+      this.contacts.set(this.doctors.doctors().filter((doctor) => relatedDoctorIds.has(doctor.id)).map((doctor) => ({
+        id: doctor.id,
+        doctorId: doctor.id,
+        name: doctor.profile?.full_name ?? `${doctor.firstName} ${doctor.lastName}`.trim(),
+        specialty: doctor.specialty,
+        avatarUrl: doctor.profile?.avatar_url ?? null,
+        initials: doctor.initials,
+      })));
+    }
+    this.contactsLoading.set(false);
+  }
+
+  async selectConversation(id: string): Promise<void> {
+    this.selectedId.set(id);
+    this.mobileChatOpen.set(true);
+    this.draft.set('');
+    await this.service.openConversation(id);
+  }
+
+  async startConversation(contact: ContactChoice): Promise<void> {
+    const conversationId = await this.service.openCareConversation(contact.doctorId, contact.patientId);
+    if (!conversationId) return;
+    this.contactPickerOpen.set(false);
+    this.contactQuery.set('');
+    await this.selectConversation(conversationId);
+  }
+
+  async sendMessage(): Promise<void> {
+    const conversation = this.selected();
+    const text = this.draft();
+    if (!conversation || !text.trim()) return;
+    if (await this.service.sendText(conversation.id, text)) this.draft.set('');
+  }
+
+  async sendAttachment(file: File): Promise<void> {
+    const conversation = this.selected();
+    if (conversation && await this.service.sendAttachment(conversation.id, file, this.draft())) this.draft.set('');
+  }
+
+  async openContactPicker(): Promise<void> {
+    this.contactPickerOpen.set(true);
+    if (!this.contacts().length && !this.contactsLoading()) await this.loadContacts();
+  }
+
+  closeMobileChat(): void {
+    this.mobileChatOpen.set(false);
+    this.selectedId.set(null);
+    this.service.closeConversation();
+  }
+
+  @HostListener('document:keydown.escape') closePicker(): void { this.contactPickerOpen.set(false); }
 }
